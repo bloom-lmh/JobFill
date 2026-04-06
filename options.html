@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>简历管理</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Microsoft YaHei',sans-serif;background:#f0f4f8;color:#2d3748;font-size:14px}
+
+    /* 顶栏 */
+    .topbar{background:#1a365d;color:#fff;padding:0 32px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+    .topbar h1{font-size:16px;font-weight:600}
+    .topbar-btns{display:flex;gap:8px}
+    .btn{padding:7px 16px;border:none;border-radius:5px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .btn:hover{opacity:.85}
+    .btn-save{background:#38a169;color:#fff}
+    .btn-export{background:#4a90d9;color:#fff}
+    .btn-import{background:#718096;color:#fff}
+
+    /* 左侧导航 */
+    .layout{display:flex;min-height:calc(100vh - 54px)}
+    .sidenav{width:160px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f0;padding:16px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+    .sidenav a{display:block;padding:9px 20px;color:#4a5568;font-size:13px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;text-decoration:none}
+    .sidenav a:hover{background:#f7fafc;color:#1a365d}
+    .sidenav a.active{background:#ebf4ff;color:#1a365d;border-left-color:#1a365d;font-weight:600}
+
+    /* 内容区 */
+    .content{flex:1;padding:24px 32px 60px;max-width:900px}
+
+    /* 卡片 */
+    .card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:24px}
+    .card-header{padding:14px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+    .card-header h2{font-size:15px;font-weight:600;color:#1a365d;display:flex;align-items:center;gap:8px}
+    .card-body{padding:20px}
+
+    /* 表单 */
+    .grid{display:grid;gap:14px}
+    .g2{grid-template-columns:1fr 1fr}
+    .g3{grid-template-columns:1fr 1fr 1fr}
+    .g4{grid-template-columns:1fr 1fr 1fr 1fr}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{font-size:12px;color:#718096;font-weight:500}
+    .field input,.field select,.field textarea{padding:8px 10px;border:1px solid #cbd5e0;border-radius:5px;font-size:13px;font-family:inherit;color:#2d3748;outline:none;transition:border-color .2s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#4a90d9;box-shadow:0 0 0 2px rgba(74,144,217,.15)}
+    .field textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+    /* 多条目 */
+    .multi-item{border:1px solid #e2e8f0;border-radius:6px;padding:16px;margin-bottom:12px;position:relative;background:#fafbfc}
+    .multi-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .multi-item-title{font-size:13px;font-weight:600;color:#2d3748}
+    .btn-remove{background:#fed7d7;color:#c53030;border:none;border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+    .btn-remove:hover{background:#feb2b2}
+    .btn-add{background:#ebf4ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:5px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;width:100%;margin-top:4px}
+    .btn-add:hover{background:#bee3f8}
+
+    /* toast */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1}
+
+    #importFile{display:none}
+
+    @media(max-width:700px){
+      .sidenav{display:none}
+      .g2,.g3,.g4{grid-template-columns:1fr}
+      .content{padding:16px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📄 简历信息管理</h1>
+  <div class="topbar-btns">
+    <button class="btn btn-import" id="btn-import">⬆ 导入</button>
+    <button class="btn btn-export" id="btn-export">⬇ 导出</button>
+    <button class="btn btn-save"   id="btn-save">💾 保存</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidenav">
+    <a href="#sec-personal" class="active">👤 个人信息</a>
+    <a href="#sec-intention">🎯 求职意向</a>
+    <a href="#sec-education">🎓 教育背景</a>
+    <a href="#sec-internship">🏢 实习经历</a>
+    <a href="#sec-work">💼 工作经历</a>
+    <a href="#sec-projects">🚀 项目经历</a>
+    <a href="#sec-skills">⚡ 技能专长</a>
+    <a href="#sec-languages">🌐 外语能力</a>
+    <a href="#sec-papers">📝 论文成果</a>
+    <a href="#sec-intro">💬 自我评价</a>
+    <a href="#sec-family">👨‍👩‍👧 家庭状况</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 个人信息 -->
+    <div class="card" id="sec-personal">
+      <div class="card-header"><h2>👤 个人信息</h2></div>
+      <div class="card-body">
+        <div class="grid g4">
+          <div class="field"><label>姓名</label><input id="p_name"/></div>
+          <div class="field"><label>性别</label>
+            <select id="p_gender"><option value="">请选择</option><option>男</option><option>女</option></select>
+          </div>
+          <div class="field"><label>出生日期</label><input id="p_birthday" placeholder="2002-01-21"/></div>
+          <div class="field"><label>年龄</label><input id="p_age" placeholder="23"/></div>
+        </div>
+        <div class="grid g3" style="margin-top:14px">
+          <div class="field"><label>手机号</label><input id="p_phone"/></div>
+          <div class="field"><label>邮箱</label><input id="p_email"/></div>
+          <div class="field"><label>微信号</label><input id="p_wechat"/></div>
+        </div>
+        <div class="grid g3" style="margin-top:14px">
+          <div class="field"><label>QQ号</label><input id="p_qq"/></div>
+          <div class="field"><label>身份证号</label><input id="p_id_number"/></div>
+          <div class="field"><label>婚姻状况</label>
+            <select id="p_marital"><option value="">请选择</option><option>未婚</option><option>已婚</option><option>离异</option></select>
+          </div>
+        </div>
+        <div class="grid g4" style="margin-top:14px">
+          <div class="field"><label>政治面貌</label>
+            <select id="p_political"><option value="">请选择</option><option>中共党员</option><option>共青团员</option><option>群众</option><option>民主党派</option></select>
+          </div>
+          <div class="field"><label>民族</label><input id="p_ethnicity" placeholder="汉族"/></div>
+          <div class="field"><label>国籍</label><input id="p_nationality" placeholder="中国"/></div>
+          <div class="field"><label>身高(cm)</label><input id="p_height"/></div>
+        </div>
+        <div class="grid g4" style="margin-top:14px">
+          <div class="field"><label>籍贯省份</label><input id="p_hometown_province" placeholder="福建省"/></div>
+          <div class="field"><label>籍贯城市</label><input id="p_hometown_city" placeholder="漳州市"/></div>
+          <div class="field"><label>现居城市</label><input id="p_current_city"/></div>
+          <div class="field"><label>现居地址</label><input id="p_address"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 求职意向 -->
+    <div class="card" id="sec-intention">
+      <div class="card-header"><h2>🎯 求职意向</h2></div>
+      <div class="card-body">
+        <div class="grid g3">
+          <div class="field"><label>求职状态</label>
+            <select id="i_status"><option value="">请选择</option><option>在校学生</option><option>应届毕业生</option><option>在职找机会</option><option>离职待业</option></select>
+          </div>
+          <div class="field"><label>求职类型</label>
+            <select id="i_type"><option value="">请选择</option><option>实习</option><option>全职</option><option>兼职</option></select>
+          </div>
+          <div class="field"><label>到岗时间</label><input id="i_available" placeholder="随时到岗"/></div>
+        </div>
+        <div class="grid g3" style="margin-top:14px">
+          <div class="field"><label>期望行业</label><input id="i_industry" placeholder="互联网/AI"/></div>
+          <div class="field"><label>期望岗位</label><input id="i_position" placeholder="大模型应用实习生"/></div>
+          <div class="field"><label>期望城市</label><input id="i_city" placeholder="不限"/></div>
+        </div>
+        <div class="grid g3" style="margin-top:14px">
+          <div class="field"><label>期望薪资</label><input id="i_salary" placeholder="面议"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 教育背景 -->
+    <div class="card" id="sec-education">
+      <div class="card-header">
+        <h2>🎓 教育背景</h2>
+      </div>
+      <div class="card-body">
+        <div id="edu-list"></div>
+        <button class="btn-add" id="edu-add">+ 添加教育经历</button>
+      </div>
+    </div>
+
+    <!-- 实习经历 -->
+    <div class="card" id="sec-internship">
+      <div class="card-header"><h2>🏢 实习经历</h2></div>
+      <div class="card-body">
+        <div id="intern-list"></div>
+        <button class="btn-add" id="intern-add">+ 添加实习经历</button>
+      </div>
+    </div>
+
+    <!-- 工作经历 -->
+    <div class="card" id="sec-work">
+      <div class="card-header"><h2>💼 工作经历</h2></div>
+      <div class="card-body">
+        <div id="work-list"></div>
+        <button class="btn-add" id="work-add">+ 添加工作经历</button>
+      </div>
+    </div>
+
+    <!-- 项目经历 -->
+    <div class="card" id="sec-projects">
+      <div class="card-header"><h2>🚀 项目经历</h2></div>
+      <div class="card-body">
+        <div id="proj-list"></div>
+        <button class="btn-add" id="proj-add">+ 添加项目经历</button>
+      </div>
+    </div>
+
+    <!-- 技能专长 -->
+    <div class="card" id="sec-skills">
+      <div class="card-header"><h2>⚡ 技能专长</h2></div>
+      <div class="card-body">
+        <div class="grid" style="gap:14px">
+          <div class="field"><label>技术技能</label><textarea id="s_tech" style="min-height:100px"></textarea></div>
+          <div class="field"><label>职场技能 / 其他能力</label><textarea id="s_workplace" style="min-height:60px"></textarea></div>
+          <div class="field"><label>兴趣爱好</label><input id="s_interests"/></div>
+          <div class="field"><label>职业规划</label><textarea id="s_career_plan" style="min-height:60px"></textarea></div>
+          <div class="field"><label>专业证书</label><textarea id="s_certificates" style="min-height:60px"></textarea></div>
+          <div class="field"><label>求职信</label><textarea id="s_cover_letter" style="min-height:100px"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 外语能力 -->
+    <div class="card" id="sec-languages">
+      <div class="card-header"><h2>🌐 外语能力</h2></div>
+      <div class="card-body">
+        <div id="lang-list"></div>
+        <button class="btn-add" id="lang-add">+ 添加语言</button>
+      </div>
+    </div>
+
+    <!-- 论文成果 -->
+    <div class="card" id="sec-papers">
+      <div class="card-header"><h2>📝 论文成果</h2></div>
+      <div class="card-body">
+        <div id="paper-list"></div>
+        <button class="btn-add" id="paper-add">+ 添加论文</button>
+      </div>
+    </div>
+
+    <!-- 自我评价 -->
+    <div class="card" id="sec-intro">
+      <div class="card-header"><h2>💬 自我评价</h2></div>
+      <div class="card-body">
+        <div class="field"><textarea id="intro" style="min-height:120px"></textarea></div>
+        <div class="grid g2" style="margin-top:14px">
+          <div class="field"><label>GitHub</label><input id="github"/></div>
+          <div class="field"><label>个人主页</label><input id="homepage"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 家庭状况 -->
+    <div class="card" id="sec-family">
+      <div class="card-header"><h2>👨‍👩‍👧 家庭状况</h2></div>
+      <div class="card-body">
+        <div class="field"><label>家庭成员描述（选填）</label><textarea id="family" style="min-height:80px"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept=".json"/>
+
+<script src="options.js"></script>
+</body>
+</html>
