@@ -265,11 +265,11 @@ async function init() {
     fillForm(resumeData);
   } else {
     try {
-      const res = await fetch(chrome.runtime.getURL('resume-data.json'));
+      const res = await fetch(chrome.runtime.getURL('resume-data.example.json'));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       fillForm(data);
-      await chrome.storage.local.set({ resumeData: data });
-    } catch (e) { console.warn('读取默认数据失败', e); }
+    } catch (e) { console.warn('读取示例数据失败', e); }
   }
   // 延迟一帧确保 DOM 渲染完毕后再统计
   requestAnimationFrame(updateNavCounts);
