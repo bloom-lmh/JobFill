@@ -3,7 +3,10 @@
   "name": "JobFill — 简历一键填写",
   "version": "1.0.0",
   "description": "在招聘平台自动识别并填写表单字段",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",

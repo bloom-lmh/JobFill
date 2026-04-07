@@ -8,24 +8,44 @@
     body{font-family:'Microsoft YaHei',sans-serif;background:#f0f4f8;color:#2d3748;font-size:14px}
 
     /* 顶栏 */
-    .topbar{background:#1a365d;color:#fff;padding:0 32px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+    .topbar{background:#1a365d;color:#fff;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
     .topbar h1{font-size:16px;font-weight:600}
     .topbar-btns{display:flex;gap:8px}
     .btn{padding:7px 16px;border:none;border-radius:5px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:opacity .2s}
     .btn:hover{opacity:.85}
     .btn-save{background:#38a169;color:#fff}
     .btn-export{background:#4a90d9;color:#fff}
-    .btn-import{background:#718096;color:#fff}
+
+    /* 三栏包装 */
+    .page-wrap{max-width:1360px;margin:0 auto;padding:0 24px}
+    .layout{display:flex;min-height:calc(100vh - 54px);padding:20px 0;align-items:flex-start;gap:0}
 
     /* 左侧导航 */
-    .layout{display:flex;min-height:calc(100vh - 54px)}
-    .sidenav{width:160px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f0;padding:16px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
-    .sidenav a{display:block;padding:9px 20px;color:#4a5568;font-size:13px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;text-decoration:none}
+    .sidenav{width:185px;flex-shrink:0;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:74px;margin-right:20px;overflow:hidden}
+    .sidenav-hd{padding:14px 16px 10px;border-bottom:1px solid #e2e8f0}
+    .sidenav-hd h3{font-size:13px;font-weight:700;color:#1a365d}
+    .sidenav-total{font-size:11px;color:#718096;margin-top:3px}
+    .sidenav a{display:flex;align-items:center;padding:8px 14px;color:#4a5568;font-size:13px;cursor:pointer;transition:all .15s;text-decoration:none;border-left:3px solid transparent;gap:4px}
     .sidenav a:hover{background:#f7fafc;color:#1a365d}
     .sidenav a.active{background:#ebf4ff;color:#1a365d;border-left-color:#1a365d;font-weight:600}
+    .nav-count{font-size:10px;background:#e2e8f0;color:#718096;border-radius:10px;padding:1px 5px;margin-left:auto;flex-shrink:0}
+    .sidenav a.active .nav-count{background:#bee3f8;color:#2b6cb0}
 
     /* 内容区 */
-    .content{flex:1;padding:24px 32px 60px;max-width:900px}
+    .content{flex:1;min-width:0;padding-right:20px;padding-bottom:60px}
+
+    /* 右侧面板 */
+    .rightpanel{width:272px;flex-shrink:0;position:sticky;top:74px}
+    .rpanel-card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px;overflow:hidden}
+    .rpanel-hd{padding:12px 16px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#1a365d}
+    .rpanel-hd.ai-hd{background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 100%);color:#fff;border-bottom-color:#2b6cb0}
+    .rpanel-body{padding:14px}
+
+    /* 右面板表单 */
+    .rpanel-field{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+    .rpanel-field label{font-size:11px;color:#718096;font-weight:500}
+    .rpanel-field input,.rpanel-field select{padding:7px 9px;border:1px solid #cbd5e0;border-radius:5px;font-size:12px;font-family:inherit;color:#2d3748;outline:none;width:100%;transition:border-color .2s}
+    .rpanel-field input:focus,.rpanel-field select:focus{border-color:#4a90d9}
 
     /* 卡片 */
     .card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:24px}
@@ -53,17 +73,35 @@
     .btn-add{background:#ebf4ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:5px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;width:100%;margin-top:4px}
     .btn-add:hover{background:#bee3f8}
 
+    /* 自定义字段 */
+    .custom-fields-wrap{margin-top:14px;padding-top:12px;border-top:1px dashed #e2e8f0}
+    .custom-label{font-size:11px;color:#a0aec0;margin-bottom:8px;font-weight:600;display:flex;align-items:center;gap:4px}
+    .custom-field-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+    .custom-field-row .custom-field-lbl{font-size:11px;color:#718096;width:80px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .custom-field-row input{flex:1;padding:6px 9px;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;font-family:inherit;color:#2d3748;outline:none;background:#fffbeb}
+    .custom-field-row input:focus{border-color:#4a90d9}
+    .btn-del-custom{background:none;border:none;color:#cbd5e0;cursor:pointer;font-size:16px;line-height:1;padding:2px;flex-shrink:0}
+    .btn-del-custom:hover{color:#fc8181}
+
+    /* 导入区域 */
+    .import-zone{border:2px dashed #cbd5e0;border-radius:8px;padding:14px 10px;text-align:center;color:#718096;cursor:pointer;transition:all .2s}
+    .import-zone:hover,.import-zone.drag-over{border-color:#4a90d9;background:#ebf4ff;color:#2b6cb0}
+    .import-zone .zone-icon{font-size:20px;display:block;margin-bottom:5px}
+    .import-zone .zone-text{font-size:12px;font-weight:600;display:block}
+    .import-zone .zone-formats{font-size:10px;display:block;margin-top:3px;color:#a0aec0;line-height:1.6}
+    .import-zone.parsing{border-color:#4a90d9;background:#ebf4ff;color:#2b6cb0;cursor:default}
+    .parse-progress{height:4px;border-radius:2px;background:#bee3f8;margin-top:10px;overflow:hidden;display:none}
+    .import-zone.parsing .parse-progress{display:block}
+    .parse-bar{height:100%;width:0%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:2px;transition:width .5s ease}
+
     /* toast */
     .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
     .toast.show{opacity:1}
 
     #importFile{display:none}
 
-    @media(max-width:700px){
-      .sidenav{display:none}
-      .g2,.g3,.g4{grid-template-columns:1fr}
-      .content{padding:16px}
-    }
+    @media(max-width:1000px){.rightpanel{display:none}.content{padding-right:0}}
+    @media(max-width:700px){.sidenav{display:none}.g2,.g3,.g4{grid-template-columns:1fr}.content{padding:0 0 60px}}
   </style>
 </head>
 <body>
@@ -71,27 +109,39 @@
 <div class="topbar">
   <h1>📄 简历信息管理</h1>
   <div class="topbar-btns">
-    <button class="btn btn-import" id="btn-import">⬆ 导入</button>
-    <button class="btn btn-export" id="btn-export">⬇ 导出</button>
-    <button class="btn btn-save"   id="btn-save">💾 保存</button>
+    <button class="btn btn-export" id="btn-export-md" style="background:#6b7280">⬇ 导出 MD</button>
+    <button class="btn btn-export" id="btn-export">⬇ 导出 JSON</button>
+    <button class="btn btn-save" id="btn-save">💾 保存简历</button>
   </div>
 </div>
 
+<div class="page-wrap">
 <div class="layout">
+
+  <!-- 左侧导航 -->
   <nav class="sidenav">
-    <a href="#sec-personal" class="active">👤 个人信息</a>
-    <a href="#sec-intention">🎯 求职意向</a>
-    <a href="#sec-education">🎓 教育背景</a>
-    <a href="#sec-internship">🏢 实习经历</a>
-    <a href="#sec-work">💼 工作经历</a>
-    <a href="#sec-projects">🚀 项目经历</a>
-    <a href="#sec-skills">⚡ 技能专长</a>
-    <a href="#sec-languages">🌐 外语能力</a>
-    <a href="#sec-papers">📝 论文成果</a>
-    <a href="#sec-intro">💬 自我评价</a>
-    <a href="#sec-family">👨‍👩‍👧 家庭状况</a>
+    <div class="sidenav-hd">
+      <h3>内容导航</h3>
+      <div class="sidenav-total" id="nav-total">统计中...</div>
+    </div>
+    <a href="#sec-personal" class="active">👤 个人信息 <span class="nav-count" id="cnt-personal">-</span></a>
+    <a href="#sec-intention">🎯 求职意向 <span class="nav-count" id="cnt-intention">-</span></a>
+    <a href="#sec-education">🎓 教育背景 <span class="nav-count" id="cnt-education">-</span></a>
+    <a href="#sec-internship">🏢 实习经历 <span class="nav-count" id="cnt-internship">-</span></a>
+    <a href="#sec-work">💼 工作经历 <span class="nav-count" id="cnt-work">-</span></a>
+    <a href="#sec-projects">🚀 项目经历 <span class="nav-count" id="cnt-projects">-</span></a>
+    <a href="#sec-skills">⚡ 技能专长 <span class="nav-count" id="cnt-skills">-</span></a>
+    <a href="#sec-languages">🌐 外语能力 <span class="nav-count" id="cnt-languages">-</span></a>
+    <a href="#sec-papers">📝 论文成果 <span class="nav-count" id="cnt-papers">-</span></a>
+    <a href="#sec-intro">💬 自我评价 <span class="nav-count" id="cnt-intro">-</span></a>
+    <a href="#sec-family">👨‍👩‍👧 家庭状况 <span class="nav-count" id="cnt-family">-</span></a>
+    <div style="margin-top:8px;border-top:1px solid #e2e8f0;padding-top:8px;font-size:10px;color:#a0aec0;padding-left:8px;margin-bottom:2px">JD 工具</div>
+    <a href="#sec-jd">📋 JD 描述</a>
+    <a href="#sec-ai-revise">✍ AI 优化</a>
+    <a href="#sec-interview">🎯 模拟面试</a>
   </nav>
 
+  <!-- 主内容 -->
   <div class="content">
 
     <!-- 个人信息 -->
@@ -161,9 +211,7 @@
 
     <!-- 教育背景 -->
     <div class="card" id="sec-education">
-      <div class="card-header">
-        <h2>🎓 教育背景</h2>
-      </div>
+      <div class="card-header"><h2>🎓 教育背景</h2></div>
       <div class="card-body">
         <div id="edu-list"></div>
         <button class="btn-add" id="edu-add">+ 添加教育经历</button>
@@ -250,11 +298,169 @@
       </div>
     </div>
 
-  </div>
-</div>
+    <!-- JD 描述 -->
+    <div class="card" id="sec-jd">
+      <div class="card-header"><h2>📋 JD 描述</h2></div>
+      <div class="card-body">
+        <div id="jd-empty-tip" style="color:#a0aec0;font-size:13px;padding:8px 0">
+          尚未提取 JD，请在招聘网站职位页面的悬浮面板点击「📋 提取 JD」。
+        </div>
+        <div id="jd-content" style="display:none">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+            <div style="flex:1;min-width:140px">
+              <div class="field-label">岗位名称</div>
+              <div id="jd-job-title" style="font-size:15px;font-weight:600;color:#2d3748"></div>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div class="field-label">来源网站</div>
+              <div id="jd-site" style="font-size:13px;color:#718096"></div>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div class="field-label">提取时间</div>
+              <div id="jd-time" style="font-size:13px;color:#718096"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div class="field-label">关键词</div>
+            <div id="jd-keywords" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px"></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div class="field-label" style="cursor:pointer" data-toggle-section="jd-desc-body">▶ 职位描述 <span style="color:#a0aec0;font-weight:400;font-size:11px">（点击展开）</span></div>
+            <div id="jd-desc-body" style="display:none;font-size:12px;color:#4a5568;background:#f7fafc;padding:10px;border-radius:6px;max-height:200px;overflow-y:auto;white-space:pre-wrap;margin-top:4px"></div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div class="field-label" style="cursor:pointer" data-toggle-section="jd-req-body">▶ 职位要求 <span style="color:#a0aec0;font-weight:400;font-size:11px">（点击展开）</span></div>
+            <div id="jd-req-body" style="display:none;font-size:12px;color:#4a5568;background:#f7fafc;padding:10px;border-radius:6px;max-height:200px;overflow-y:auto;white-space:pre-wrap;margin-top:4px"></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <a id="jd-source-link" href="#" target="_blank" class="btn btn-export" style="font-size:12px;padding:6px 12px">🔗 原始页面</a>
+            <button id="btn-clear-jd" class="btn" style="padding:6px 12px;background:#fed7d7;color:#c53030;font-size:12px">🗑 清除 JD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 优化 -->
+    <div class="card" id="sec-ai-revise">
+      <div class="card-header"><h2>✍ AI 优化</h2></div>
+      <div class="card-body">
+        <div id="revise-no-jd" style="background:#fff5f5;color:#c53030;font-size:12px;padding:8px 10px;border-radius:6px;margin-bottom:10px;display:none">
+          ⚠ 未提取 JD，AI 将仅根据简历内容进行通用优化。建议先提取 JD 效果更好。
+        </div>
+        <div style="margin-bottom:10px">
+          <label class="field-label">优化指令 <span style="color:#a0aec0;font-weight:400">（可自定义）</span></label>
+          <textarea id="revise-prompt" style="width:100%;min-height:72px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:8px;resize:vertical;box-sizing:border-box;margin-top:4px;color:#2d3748">提取JD中的关键词和能力要求，对照着帮我优化简历，让我看起来就是他们想要的人</textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="revise-skills" checked> 技能专长</label>
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="revise-intro" checked> 自我评价</label>
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="revise-projects"> 项目描述</label>
+        </div>
+        <button id="btn-ai-revise" class="btn btn-primary" style="width:100%;margin-bottom:12px">🤖 AI 优化内容</button>
+        <div id="revise-result"></div>
+      </div>
+    </div>
+
+    <!-- 模拟面试 -->
+    <div class="card" id="sec-interview">
+      <div class="card-header"><h2>🎯 模拟面试</h2></div>
+      <div class="card-body">
+        <div style="font-size:13px;color:#718096;margin-bottom:12px">
+          AI 扮演挑剔面试官，针对你的简历提出刁钻问题；若已导入 JD 则结合岗位要求追问。
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="field-label">面试官指令 <span style="color:#a0aec0;font-weight:400">（可自定义）</span></label>
+          <textarea id="interview-prompt" style="width:100%;min-height:72px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;padding:8px;resize:vertical;box-sizing:border-box;margin-top:4px;color:#2d3748">你现在是一个挑剔的面试官，看完我的简历，请提出5个刁钻问题或指出哪段数据不清晰</textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button id="btn-gen-interview" class="btn btn-primary" style="flex:1">🤖 开始面试</button>
+          <button id="btn-regen-interview" class="btn btn-export" style="display:none">🔄 重新提问</button>
+        </div>
+        <div id="interview-result"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- 右侧面板 -->
+  <div class="rightpanel">
+
+    <!-- 导入资料 -->
+    <div class="rpanel-card">
+      <div class="rpanel-hd">📂 导入资料</div>
+      <div class="rpanel-body">
+        <div id="import-zone" class="import-zone">
+          <span class="zone-icon">📂</span>
+          <span class="zone-text">拖放或点击上传简历</span>
+          <span class="zone-formats">JSON · Markdown · TXT<br>DOCX · PDF（AI 解析）</span>
+          <div class="parse-progress"><div class="parse-bar" id="parse-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 设置 -->
+    <div class="rpanel-card" id="sec-ai">
+      <div class="rpanel-hd ai-hd">🤖 AI 填写设置</div>
+      <div class="rpanel-body">
+        <div class="rpanel-field">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="ai_enabled" style="width:14px;height:14px">
+            启用 AI 模式
+          </label>
+        </div>
+
+        <div class="rpanel-field">
+          <label>AI 提供商</label>
+          <select id="ai_provider">
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="claude">Anthropic (Claude)</option>
+            <option value="qwen">通义千问 (阿里)</option>
+            <option value="kimi">月之暗面 (Kimi)</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="glm">智谱 GLM</option>
+            <option value="openai_compat">其他兼容接口</option>
+          </select>
+        </div>
+
+        <div class="rpanel-field">
+          <label>模型名称</label>
+          <input id="ai_model" placeholder="留空使用默认"/>
+        </div>
+
+        <div class="rpanel-field" id="ai_baseurl_wrap" style="display:none">
+          <label>API Base URL</label>
+          <input id="ai_base_url" placeholder="https://api.example.com/v1"/>
+        </div>
+
+        <div class="rpanel-field">
+          <label>API Key</label>
+          <input id="ai_api_key" type="password" placeholder="sk-..."/>
+        </div>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn btn-save" id="btn-save-ai" style="padding:6px 14px;font-size:12px">保存配置</button>
+          <button class="btn btn-export" id="btn-test-ai" style="padding:6px 14px;font-size:12px">测试连接</button>
+        </div>
+        <div id="ai-test-result" style="font-size:11px;color:#38a169;margin-bottom:8px"></div>
+
+        <div style="padding:10px;background:#f7fafc;border-radius:6px;font-size:11px;color:#718096;line-height:1.8">
+          <strong style="color:#4a5568">推荐模型：</strong><br>
+          通义 → <code>qwen-plus</code><br>
+          Kimi → <code>moonshot-v1-8k</code><br>
+          DeepSeek → <code>deepseek-chat</code><br>
+          GLM → <code>glm-4-flash</code>（免费）<br>
+          <span style="color:#a0aec0;display:block;margin-top:4px">Key 仅存本机，不上传服务器。</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /rightpanel -->
+
+</div><!-- /layout -->
+</div><!-- /page-wrap -->
 
 <div class="toast" id="toast"></div>
-<input type="file" id="importFile" accept=".json"/>
+<input type="file" id="importFile" accept=".json,.md,.txt,.docx,.pdf"/>
 
 <script src="options.js"></script>
 </body>

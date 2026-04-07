@@ -1,239 +1,111 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <title>简历自动填写</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      width: 380px;
-      font-family: 'Microsoft YaHei', sans-serif;
-      font-size: 13px;
-      background: #f5f7fa;
-      color: #2c3e50;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{width:320px;font-family:'Microsoft YaHei',sans-serif;font-size:13px;background:#f0f4f8;color:#2d3748}
 
-    /* 顶部 */
-    .header {
-      background: #1a365d;
-      color: #fff;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header h1 { font-size: 15px; font-weight: 600; }
-    .header span { font-size: 11px; opacity: .7; }
+    /* 顶部渐变 */
+    .header{background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 100%);color:#fff;padding:16px}
+    .header-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .logo{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .header-title{flex:1}
+    .header-title h1{font-size:15px;font-weight:700;letter-spacing:.5px}
+    .header-title p{font-size:11px;opacity:.65;margin-top:2px}
+    .header-version{font-size:10px;opacity:.5;background:rgba(255,255,255,.1);padding:2px 6px;border-radius:10px}
 
-    /* Tab 切换 */
-    .tabs {
-      display: flex;
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .tab {
-      flex: 1;
-      padding: 9px 4px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 12px;
-      color: #718096;
-      border-bottom: 2px solid transparent;
-      transition: all .2s;
-    }
-    .tab.active {
-      color: #1a365d;
-      border-bottom-color: #1a365d;
-      font-weight: 600;
-    }
-    .tab:hover:not(.active) { color: #2d3748; }
+    /* 简历摘要卡片 */
+    .profile-card{background:#fff;margin:12px;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .profile-name{font-size:16px;font-weight:700;color:#1a365d;display:flex;align-items:center;gap:6px}
+    .profile-name .badge{font-size:10px;background:#ebf4ff;color:#2b6cb0;padding:2px 7px;border-radius:10px;font-weight:500}
+    .profile-info{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+    .info-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#4a5568}
+    .info-row .icon{width:16px;text-align:center;font-size:11px;opacity:.7}
+    .no-data{font-size:12px;color:#a0aec0;text-align:center;padding:6px 0}
 
-    /* 内容区 */
-    .panel { display: none; padding: 14px 16px; }
-    .panel.active { display: block; }
+    /* 填写进度 */
+    .section-stats{background:#fff;margin:0 12px 12px;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .section-stats h3{font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+    .stat-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+    .stat-row:last-child{margin-bottom:0}
+    .stat-label{font-size:12px;color:#4a5568;width:64px;flex-shrink:0}
+    .stat-bar-wrap{flex:1;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+    .stat-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .4s}
+    .stat-pct{font-size:11px;color:#718096;width:28px;text-align:right;flex-shrink:0}
 
-    /* 表单项 */
-    .field { margin-bottom: 12px; }
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: #4a5568;
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      padding: 7px 10px;
-      border: 1px solid #cbd5e0;
-      border-radius: 5px;
-      font-size: 13px;
-      font-family: inherit;
-      color: #2d3748;
-      background: #fff;
-      transition: border-color .2s;
-      outline: none;
-    }
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus { border-color: #1a365d; }
-    .field textarea { resize: vertical; min-height: 72px; }
+    /* 操作按钮 */
+    .actions{margin:0 12px 14px;display:flex;flex-direction:column;gap:7px}
+    .btn{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+    .btn:hover{opacity:.85}
+    .btn-primary{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff}
+    .btn-secondary{background:#fff;color:#2b6cb0;border:1.5px solid #bee3f8}
+    .btn-green{background:linear-gradient(135deg,#276749,#38a169);color:#fff}
 
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* 底部状态栏 */
+    .footer{padding:8px 14px;border-top:1px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:space-between}
+    .footer-status{font-size:11px;color:#718096;display:flex;align-items:center;gap:4px}
+    .dot{width:6px;height:6px;border-radius:50%;background:#68d391}
 
-    /* 按钮 */
-    .btn-wrap {
-      padding: 12px 16px;
-      display: flex;
-      gap: 8px;
-      background: #fff;
-      border-top: 1px solid #e2e8f0;
-    }
-    .btn {
-      flex: 1;
-      padding: 9px;
-      border: none;
-      border-radius: 5px;
-      font-size: 13px;
-      font-family: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: #1a365d; color: #fff; }
-    .btn-fill    { background: #38a169; color: #fff; }
-
-    /* 提示信息 */
-    .toast {
-      position: fixed;
-      bottom: 56px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2d3748;
-      color: #fff;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      opacity: 0;
-      transition: opacity .3s;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-    .toast.show { opacity: 1; }
-
-    /* 填写结果 */
-    #result {
-      padding: 8px 16px;
-      font-size: 12px;
-      color: #38a169;
-      background: #f0fff4;
-      border-top: 1px solid #c6f6d5;
-      display: none;
-    }
+    .toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#2d3748;color:#fff;padding:5px 14px;border-radius:14px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>📄 简历自动填写</h1>
-  <span>编辑信息 → 点击填写</span>
+  <div class="header-top">
+    <div class="logo">📄</div>
+    <div class="header-title">
+      <h1>简历自动填写</h1>
+      <p>Resume Auto Filler</p>
+    </div>
+    <span class="header-version">v1.0</span>
+  </div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" data-tab="basic">基本信息</div>
-  <div class="tab" data-tab="edu">教育经历</div>
-  <div class="tab" data-tab="work">工作经历</div>
-  <div class="tab" data-tab="extra">其他</div>
-</div>
-
-<!-- 基本信息 -->
-<div class="panel active" id="tab-basic">
-  <div class="row">
-    <div class="field"><label>姓名</label><input id="name" placeholder="庄赖宏" /></div>
-    <div class="field"><label>性别</label>
-      <select id="gender">
-        <option value="">请选择</option>
-        <option value="男">男</option>
-        <option value="女">女</option>
-      </select>
+<!-- 简历摘要 -->
+<div class="profile-card" id="profile-card">
+  <div class="no-data" id="profile-empty">暂无简历数据，请先导入或填写</div>
+  <div id="profile-content" style="display:none">
+    <div class="profile-name">
+      <span id="pf-name">—</span>
+      <span class="badge" id="pf-badge">未知身份</span>
+    </div>
+    <div class="profile-info">
+      <div class="info-row"><span class="icon">📱</span><span id="pf-phone">—</span></div>
+      <div class="info-row"><span class="icon">📧</span><span id="pf-email">—</span></div>
+      <div class="info-row"><span class="icon">🎓</span><span id="pf-edu">—</span></div>
+      <div class="info-row"><span class="icon">🎯</span><span id="pf-intention">—</span></div>
     </div>
   </div>
-  <div class="row">
-    <div class="field"><label>手机号</label><input id="phone" placeholder="15305063507" /></div>
-    <div class="field"><label>邮箱</label><input id="email" placeholder="xxx@163.com" /></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>出生年月</label><input id="birthday" placeholder="2002-01" /></div>
-    <div class="field"><label>籍贯/所在城市</label><input id="city" placeholder="福建漳州" /></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>期望薪资</label><input id="salary" placeholder="面议" /></div>
-    <div class="field"><label>到岗时间</label><input id="available" placeholder="随时到岗" /></div>
-  </div>
-  <div class="field"><label>求职意向</label><input id="intention" placeholder="大模型应用实习生" /></div>
 </div>
 
-<!-- 教育经历 -->
-<div class="panel" id="tab-edu">
-  <div class="field"><label>最高学历</label>
-    <select id="degree">
-      <option value="">请选择</option>
-      <option value="博士">博士</option>
-      <option value="硕士">硕士</option>
-      <option value="本科">本科</option>
-      <option value="大专">大专</option>
-    </select>
-  </div>
-  <div class="field"><label>学校名称</label><input id="school" placeholder="大连理工大学" /></div>
-  <div class="field"><label>专业</label><input id="major" placeholder="智慧城市建造与管理" /></div>
-  <div class="row">
-    <div class="field"><label>入学时间</label><input id="edu_start" placeholder="2024-09" /></div>
-    <div class="field"><label>毕业时间</label><input id="edu_end" placeholder="2027-06" /></div>
-  </div>
-  <div class="field"><label>GPA / 排名（选填）</label><input id="gpa" placeholder="例：3.8/4.0" /></div>
-</div>
-
-<!-- 工作/实习经历 -->
-<div class="panel" id="tab-work">
-  <div class="field"><label>公司名称</label><input id="company" placeholder="大连智水慧成科技有限责任公司" /></div>
-  <div class="field"><label>职位名称</label><input id="position" placeholder="研发部实习生" /></div>
-  <div class="row">
-    <div class="field"><label>开始时间</label><input id="work_start" placeholder="2024-09" /></div>
-    <div class="field"><label>结束时间</label><input id="work_end" placeholder="2025-06" /></div>
-  </div>
-  <div class="field"><label>工作描述</label>
-    <textarea id="work_desc" placeholder="简要描述工作内容、成果..."></textarea>
+<!-- 各板块进度 -->
+<div class="section-stats">
+  <h3>简历完整度</h3>
+  <div id="stats-rows">
+    <div class="stat-row"><span class="stat-label">个人信息</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-personal" style="width:0%"></div></div><span class="stat-pct" id="pct-personal">0%</span></div>
+    <div class="stat-row"><span class="stat-label">求职意向</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-intention" style="width:0%"></div></div><span class="stat-pct" id="pct-intention">0%</span></div>
+    <div class="stat-row"><span class="stat-label">教育背景</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-education" style="width:0%"></div></div><span class="stat-pct" id="pct-education">0%</span></div>
+    <div class="stat-row"><span class="stat-label">工作/实习</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-work" style="width:0%"></div></div><span class="stat-pct" id="pct-work">0%</span></div>
+    <div class="stat-row"><span class="stat-label">技能&自评</span><div class="stat-bar-wrap"><div class="stat-bar" id="bar-skills" style="width:0%"></div></div><span class="stat-pct" id="pct-skills">0%</span></div>
   </div>
 </div>
 
-<!-- 其他 -->
-<div class="panel" id="tab-extra">
-  <div class="field"><label>自我介绍</label>
-    <textarea id="intro" placeholder="具备扎实的深度学习与编程基础，专注 LLM 应用开发..."></textarea>
-  </div>
-  <div class="field"><label>技能特长</label>
-    <textarea id="skills" placeholder="Python / PyTorch / RAG / Agent / Prompt Engineering..."></textarea>
-  </div>
-  <div class="field"><label>GitHub 链接</label><input id="github" placeholder="https://github.com/zhuanglaihong" /></div>
-  <div class="field"><label>个人主页</label><input id="homepage" placeholder="https://zhuanglaihong.github.io" /></div>
+<!-- 操作按钮 -->
+<div class="actions">
+  <button class="btn btn-green" id="btn-panel">📋 显示填写面板</button>
+  <button class="btn btn-primary" id="btn-options">⚙ 打开简历管理页</button>
 </div>
 
-<div id="result">✓ 已填写 <span id="result-count">0</span> 个字段</div>
-
-<div class="btn-wrap">
-  <button class="btn btn-primary" id="btn-save">保存</button>
-  <button class="btn btn-fill"    id="btn-fill">🚀 自动填写</button>
-</div>
-<div style="padding:8px 16px 12px; text-align:center; border-top:1px solid #e2e8f0">
-  <a id="btn-options" href="#" style="font-size:12px; color:#4a90d9; text-decoration:none;">
-    ⚙ 打开完整简历管理页
-  </a>
+<div class="footer">
+  <div class="footer-status"><span class="dot"></span>扩展已就绪</div>
+  <span style="font-size:11px;color:#a0aec0" id="footer-total">—</span>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="popup.js"></script>
 </body>
 </html>
