@@ -182,6 +182,7 @@ languages: [{ language, certificate, exam_date, score, speaking, writing }]
 papers: [{ title, journal, author_rank, status, url }]
 intro, github, homepage, family
 
+重要原则：desc（工作/实习/项目描述）、intro（自我介绍）、thesis、activities 等所有长文本字段，必须完整照录原文，禁止压缩、改写、总结或省略任何内容。
 只输出 JSON 对象，不含 Markdown 代码块或额外说明。`;
 
   const user = `简历原文：\n${text}`;

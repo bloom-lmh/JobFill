@@ -750,9 +750,8 @@ function parseResumeText(text) {
       // 子项（- GPA：3.8 / 4.0）已由 kvMatch 处理，这里处理普通描述行
     } else if (currentIntern || currentWork) {
       const target = currentIntern || currentWork;
-      if (/^\d+\./.test(line) || /^[-•]/.test(line)) {
-        target.desc = (target.desc ? target.desc + '\n' : '') + plain;
-      }
+      // 接受所有正文行（含普通段落），不只限序号/符号开头
+      target.desc = (target.desc ? target.desc + '\n' : '') + plain;
     } else if (currentProj) {
       currentProj.desc = (currentProj.desc ? currentProj.desc + '\n' : '') + plain;
     }

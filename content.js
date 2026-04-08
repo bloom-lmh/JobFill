@@ -25,11 +25,39 @@
     </div>
     <div id="__rf_log__"></div>
   `;
+  panel.style.display = 'none'; // 默认隐藏，点图标才展开
   document.body.appendChild(panel);
+
+  // ===== 小图标（收起状态，始终可见）=====
+  const trigger = document.createElement('div');
+  trigger.id = '__rf_trigger__';
+  trigger.title = '简历填写';
+  trigger.innerHTML = '📄';
+  document.body.appendChild(trigger);
 
   // ===== 样式 =====
   const style = document.createElement('style');
   style.textContent = `
+    #__rf_trigger__ {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 42px;
+      height: 42px;
+      background: #1a365d;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 2147483647;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4);
+      user-select: none;
+      transition: transform .15s;
+    }
+    #__rf_trigger__:hover { transform: scale(1.1); }
     #__rf_panel__ {
       position: fixed;
       bottom: 24px;
@@ -154,9 +182,26 @@
   });
   document.addEventListener('mouseup', () => dragging = false);
 
-  // ===== 关闭（隐藏而非销毁，可通过插件弹窗恢复）=====
+  // ===== 小图标点击 → 展开面板 =====
+  trigger.addEventListener('click', () => {
+    // 先取位置，再隐藏（隐藏后 getBoundingClientRect 全为 0）
+    const tr = trigger.getBoundingClientRect();
+    trigger.style.display = 'none';
+    panel.style.right = '24px';
+    panel.style.bottom = '24px';
+    panel.style.left = 'auto';
+    panel.style.top = 'auto';
+    panel.style.display = '';
+  });
+
+  // ===== 关闭 → 收起为小图标 =====
   document.getElementById('__rf_close__').addEventListener('click', () => {
     panel.style.display = 'none';
+    trigger.style.right = '24px';
+    trigger.style.bottom = '24px';
+    trigger.style.left = 'auto';
+    trigger.style.top = 'auto';
+    trigger.style.display = '';
   });
 
   // ===== 清除高亮 =====
@@ -190,6 +235,8 @@
     edu_start:'入学时间', edu_end:'毕业时间', gpa:'GPA', edu_rank:'成绩排名',
     company:'公司', position:'职位', work_start:'入职时间',
     work_end:'离职时间', work_desc:'工作描述',
+    proj_name:'项目名称', proj_role:'项目角色', proj_desc:'项目描述',
+    proj_start:'项目开始', proj_end:'项目结束',
     skills:'技能特长', certificates:'证书', cover_letter:'求职信',
     intro:'自我介绍', github:'GitHub', homepage:'个人主页',
   };
@@ -225,11 +272,11 @@
     salary:       ['期望薪资','薪资','salary','薪酬','工资','月薪','年薪','薪资范围','ctc','期望月薪','薪酬期望','薪资要求'],
     available:    ['到岗时间','入职时间','available','何时到岗','notice.*period','多久到岗','最早到岗'],
     // 教育
-    school:       ['学校','school','university','college','院校','毕业院校','就读院校','学校名称','所在院校'],
+    school:       ['就读学校','毕业学校','学校全称','学校名称','学校','教育机构','毕业院校','就读院校','所在院校','院校名称','院校','school','university','college','institution'],
     major:        ['专业','major','subject','所学专业'],
     degree:       ['学历','degree','education.*level','最高学历','学位','文凭','学历层次','最终学历'],
-    edu_start:    ['入学时间','入学年份','入学'],
-    edu_end:      ['毕业时间','毕业年份','graduation','预计毕业'],
+    edu_start:    ['入学时间','入学年份','入学','开始时间','起始时间','就读开始','在校开始','开始年月'],
+    edu_end:      ['毕业时间','毕业年份','graduation','预计毕业','结束时间','截止时间','离校时间','在校结束','结束年月'],
     gpa:            ['gpa','绩点','gpa成绩','学业成绩'],
     edu_rank:       ['成绩排名','班级排名','专业排名'],
     edu_department: ['院系','所在院系','所在学院','学院名称','department','faculty'],
@@ -240,9 +287,13 @@
     // 工作/实习
     company:      ['公司','company','employer','单位','工作单位','任职单位','就职公司','企业名称'],
     position:     ['职位','岗位','position','title(?!s)','担任','职务','担任职务','工作职称','任职岗位'],
-    work_start:   ['入职','工作开始','work.*start','实习开始'],
-    work_end:     ['离职','工作结束','work.*end','实习结束'],
+    work_start:   ['入职','工作开始','work.*start','实习开始','开始时间','起始时间','在职开始','工作开始年月'],
+    work_end:     ['离职','工作结束','work.*end','实习结束','结束时间','截止时间','在职结束','工作结束年月'],
     work_desc:    ['工作描述','工作内容','工作职责','岗位职责','job.*desc','实习描述'],
+    // 项目经历
+    proj_name:    ['项目名称','项目全称','工程名称','project.*name','参与项目','所在项目'],
+    proj_role:    ['项目角色','担任角色','参与角色','项目职务','proj.*role'],
+    proj_desc:    ['项目描述','项目内容','项目说明','项目介绍','项目职责','project.*desc','负责内容','项目成果'],
     // 其他
     skills:       ['技能','skill','专业技能','技术栈','掌握技能'],
     certificates: ['证书','certificate','资质','获奖'],
@@ -251,6 +302,101 @@
     github:       ['github'],
     homepage:     ['个人主页','个人网站','homepage','website','博客','portfolio'],
   };
+
+  // ===== 模糊匹配：各字段的候选中文标签 =====
+  const FUZZY_LABELS = {
+    name:           ['姓名','真实姓名','申请人姓名','候选人姓名','您的姓名'],
+    gender:         ['性别','您的性别'],
+    birthday:       ['出生日期','出生年月','生日'],
+    age:            ['年龄'],
+    phone:          ['手机号','手机号码','联系电话','移动电话','联系方式'],
+    email:          ['电子邮箱','邮箱地址','邮件地址','电子邮件'],
+    wechat:         ['微信号','微信'],
+    id_number:      ['身份证号','身份证号码'],
+    political:      ['政治面貌'],
+    ethnicity:      ['民族'],
+    nationality:    ['国籍'],
+    hometown:       ['籍贯','户籍所在地'],
+    city:           ['现居城市','所在城市','居住城市','目前所在城市'],
+    address:        ['详细地址','居住地址','通讯地址','现居地址'],
+    marital:        ['婚姻状况','婚育状况'],
+    height:         ['身高'],
+    weight:         ['体重'],
+    driving:        ['驾照类型','驾驶证'],
+    job_status:     ['求职状态','在职状态','就业状态'],
+    job_type:       ['求职类型','工作类型','就业类型'],
+    industry:       ['期望行业','目标行业'],
+    intention:      ['求职意向','期望岗位','意向岗位','应聘岗位'],
+    job_city:       ['期望城市','意向城市','期望工作城市'],
+    salary:         ['期望薪资','薪资期望','薪酬期望','期望月薪','薪资要求'],
+    available:      ['到岗时间','最早到岗','入职时间'],
+    school:         ['学校名称','就读学校','毕业学校','毕业院校','就读院校','学校','院校名称'],
+    major:          ['所学专业','专业名称','专业'],
+    degree:         ['学历','最高学历','学历层次','学位'],
+    edu_start:      ['入学时间','入学年份','入学年月','开始时间','起始时间','就读开始','在校开始','开始年月'],
+    edu_end:        ['毕业时间','毕业年份','预计毕业时间','结束时间','截止时间','离校时间','在校结束','结束年月'],
+    gpa:            ['GPA','绩点','学业成绩'],
+    edu_rank:       ['成绩排名','班级排名','专业排名'],
+    edu_department: ['院系','所在院系','学院名称'],
+    company:        ['公司名称','工作单位','就职公司','任职单位','企业名称'],
+    position:       ['职位名称','担任职务','工作职称','任职岗位'],
+    work_start:     ['入职时间','入职日期','工作开始时间','开始时间','起始时间','在职开始','工作开始年月'],
+    work_end:       ['离职时间','离职日期','工作结束时间','结束时间','截止时间','在职结束','工作结束年月'],
+    work_desc:      ['工作描述','工作内容','岗位职责','工作职责'],
+    proj_name:      ['项目名称','项目全称','工程名称','参与项目'],
+    proj_role:      ['项目角色','担任角色','项目职务'],
+    proj_desc:      ['项目描述','项目内容','项目说明','项目介绍','负责内容'],
+    skills:         ['技能特长','专业技能','掌握技能'],
+    intro:          ['自我介绍','个人简介','自我评价','个人总结','个人优势'],
+    salary:         ['期望薪资','薪资期望','期望月薪','薪资要求'],
+    github:         ['GitHub地址','GitHub'],
+    homepage:       ['个人主页','个人网站','博客地址'],
+  };
+
+  // 字符串相似度：优先包含关系，其次字符二元组 Jaccard
+  function strSimilarity(a, b) {
+    a = a.replace(/\s/g, '');
+    b = b.replace(/\s/g, '');
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    if (b.includes(a) || a.includes(b)) return 0.85;
+    // 字符二元组 Jaccard
+    const bigrams = s => {
+      const set = new Set();
+      for (let i = 0; i < s.length - 1; i++) set.add(s[i] + s[i + 1]);
+      return set;
+    };
+    const sa = bigrams(a), sb = bigrams(b);
+    if (!sa.size || !sb.size) return 0;
+    let inter = 0;
+    for (const g of sa) if (sb.has(g)) inter++;
+    return inter / (sa.size + sb.size - inter);
+  }
+
+  // 从 hint 中提取候选短标签段（长度 2-12 的分词片段）
+  function extractSegments(hint) {
+    return hint
+      .split(/[\s,，。；;|\/\\·\-_()\[\]【】（）]+/)
+      .map(s => s.trim())
+      .filter(s => s.length >= 2 && s.length <= 14);
+  }
+
+  // 模糊匹配：对 hint 中每个片段与 FUZZY_LABELS 候选对比，取最高分
+  function matchKeyFuzzy(hint) {
+    const THRESHOLD = 0.5;
+    const segments = extractSegments(hint);
+    if (!segments.length) return null;
+    let bestKey = null, bestScore = 0;
+    for (const [key, labels] of Object.entries(FUZZY_LABELS)) {
+      for (const label of labels) {
+        for (const seg of segments) {
+          const score = strSimilarity(label, seg);
+          if (score > bestScore) { bestScore = score; bestKey = key; }
+        }
+      }
+    }
+    return bestScore >= THRESHOLD ? bestKey : null;
+  }
 
   // ===== 提取最清晰的单个标签文本 =====
   function extractBestLabel(el) {
@@ -276,6 +422,37 @@
   function getHint(el) {
     const parts = [];
 
+    // 0. Phoenix UI 专属：向上找最近的 phoenix-form-item / boss-form__item，取其 label 子元素
+    if (/phoenix|boss-form/i.test(el.className || '')) {
+      const pi = el.closest('[class*="phoenix-form-item"],[class*="boss-form__item"],[class*="phoenix-field"]');
+      if (pi) {
+        const lbl = pi.querySelector('[class*="label"],[class*="title"]');
+        if (lbl && !lbl.querySelector('input,select,textarea') && !lbl.closest('#__rf_panel__')) {
+          parts.push(lbl.textContent.trim());
+        }
+      }
+    }
+
+    // 0.5. Phoenix input/select wrapper：检查 wrapper 的前兄弟元素文字
+    // 适配 BOSS直聘教育表单：label 是 phoenix-input 容器的前一个兄弟节点
+    if (/phoenix-input|phoenix-select/i.test(el.className || '')) {
+      const wrapper = el.closest('[class*="phoenix-input"],[class*="phoenix-select"]');
+      if (wrapper && wrapper !== el) {
+        let sib = wrapper.previousElementSibling;
+        for (let i = 0; i < 3 && sib; i++) {
+          if (!sib.querySelector('input,select,textarea')) {
+            const t = sib.textContent.trim().replace(/\*\s*$/, '').trim();
+            if (t && t.length >= 2 && t.length < 40
+                && !/^请[选输]/.test(t) && !/^必填$/.test(t)) {
+              parts.push(t);
+              break;
+            }
+          }
+          sib = sib.previousElementSibling;
+        }
+      }
+    }
+
     // 1. for 绑定的 label
     if (el.id) {
       try {
@@ -288,35 +465,68 @@
     const parentLbl = el.closest('label');
     if (parentLbl) parts.push(parentLbl.textContent);
 
-    // 3. 前兄弟节点（最多5层，文字 < 50 字才采用）
+    // 2b. 各 UI 框架表单容器内的 label（Ant Design / Element UI / Phoenix / 通用）
+    const formItem = el.closest([
+      '.ant-form-item', '.el-form-item', '.form-item', '.form-group',
+      '[class*="formItem"]', '[class*="form-item"]', '[class*="field-item"]',
+      '[class*="form__item"]', '[class*="boss-form__item"]',
+      '[class*="phoenix-form"]', '[class*="formField"]',
+    ].join(','));
+    if (formItem) {
+      const lblEl = formItem.querySelector([
+        'label',
+        '.ant-form-item-label', '.el-form-item__label',
+        '[class*="form-item__label"]', '[class*="formItem__label"]',
+        '[class*="form__label"]', '[class*="phoenix-form"][class*="label"]',
+        '[class*="label"]', '[class*="Label"]',
+      ].join(','));
+      if (lblEl && !lblEl.closest('#__rf_panel__')) {
+        parts.push(lblEl.textContent.trim().slice(0, 40));
+      }
+    }
+
+    // 3. 前兄弟节点（最多5层，文字 < 80 字才采用；也尝试兄弟的第一个子元素）
     let prev = el.previousElementSibling;
     for (let i = 0; i < 5 && prev; i++) {
       const t = prev.textContent.trim();
-      if (t && t.length < 50) { parts.push(t); break; }
+      if (t && t.length < 80) { parts.push(t); break; }
+      // 兄弟内第一个纯文本子元素
+      const firstChild = [...prev.querySelectorAll('span,label,div,p')].find(c => {
+        const ct = c.textContent.trim(); return ct && ct.length < 30;
+      });
+      if (firstChild) { parts.push(firstChild.textContent.trim()); break; }
       prev = prev.previousElementSibling;
     }
 
-    // 4. 向上遍历3层父元素，提取属性和直接文本节点
+    // 4. 向上遍历6层父元素，提取属性和标签文本
     let ancestor = el.parentElement;
-    for (let depth = 0; depth < 3 && ancestor; depth++) {
-      // 属性
+    for (let depth = 0; depth < 6 && ancestor; depth++) {
+      // 4a. data 属性（任意深度）
       ['data-label','data-name','data-field','data-field-name','data-field-label','title'].forEach(attr => {
         const v = ancestor.getAttribute(attr);
         if (v) parts.push(v);
       });
-      // 直接子文本节点（不包含子元素的文字）
+      // 4b. 直接子文本节点
       for (const node of ancestor.childNodes) {
         if (node.nodeType === 3) {
           const t = node.textContent.trim();
           if (t && t.length < 30) parts.push(t);
         }
       }
-      // 第一个非输入类子元素的文字（如 span/div 标签）
-      const firstTextEl = [...ancestor.children].find(
-        c => !['INPUT','SELECT','TEXTAREA','BUTTON'].includes(c.tagName) && !c.closest('#__rf_panel__')
-      );
-      if (firstTextEl) parts.push(firstTextEl.textContent.slice(0, 40));
-
+      // 4c. 直接子元素中找 label 类节点（保持原逻辑，不误伤其他字段）
+      for (const child of ancestor.children) {
+        if (child.closest('#__rf_panel__')) continue;
+        if (child.querySelector('input,select,textarea')) continue;
+        const cls = (child.className || '').toLowerCase();
+        const tag = child.tagName;
+        const isLabelLike = tag === 'LABEL'
+          || cls.includes('label') || cls.includes('title')
+          || cls.includes('form__name') || cls.includes('field__name');
+        if (isLabelLike) {
+          const t = child.textContent.trim();
+          if (t && t.length < 40) { parts.push(t); break; }
+        }
+      }
       ancestor = ancestor.parentElement;
     }
 
@@ -334,12 +544,14 @@
   }
 
   function matchKey(hint) {
+    // 1. 正则精确匹配（快路径）
     for (const [key, patterns] of Object.entries(MATCHERS)) {
       for (const p of patterns) {
         if (new RegExp(p, 'i').test(hint)) return key;
       }
     }
-    return null;
+    // 2. 模糊相似度匹配（兜底）
+    return matchKeyFuzzy(hint);
   }
 
   // ===== 日志 =====
@@ -439,21 +651,73 @@
     // 对 readonly（日历 picker 控制的日期框）临时解除后再恢复
     const wasReadOnly = el.readOnly;
     if (wasReadOnly) el.removeAttribute('readonly');
-    // 1. 原型链 setter，绕过 React/Vue/Angular 数据劫持
+
+    // 1. 全套 pointer/focus 事件激活元素（参考项目：Phoenix React 需要先 focus 再 set）
+    el.dispatchEvent(new FocusEvent('focus', { bubbles: true, cancelable: true }));
+    if (typeof PointerEvent !== 'undefined') {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, buttons: 1 }));
+    }
+    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true, cancelable: true }));
+    el.dispatchEvent(new MouseEvent('click',     { bubbles: true, cancelable: true }));
+
+    // 2. 原型链 setter（绕过 React/Vue 数据劫持）
     const proto = Object.getPrototypeOf(el);
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    const ctor_setter = Object.getOwnPropertyDescriptor(el.constructor?.prototype, 'value')?.set;
+    const proto_setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    // 优先用 prototype setter（参考项目区分 ctor vs proto）
+    const setter = (proto_setter && proto_setter !== ctor_setter) ? proto_setter : (ctor_setter || proto_setter);
     if (setter) setter.call(el, value); else el.value = value;
-    // 2. InputEvent（带 inputType，React 合成事件必须）
-    el.dispatchEvent(new InputEvent('input', {
-      bubbles: true, cancelable: true, inputType: 'insertText', data: String(value)
-    }));
-    // 3. composition events（CJK 输入法兼容）
+
+    // 3. 同步设置 HTML attribute（Phoenix React 可能从 attribute 读值）
+    el.setAttribute('value', String(value));
+
+    // 4. 事件链：input → change → blur
+    el.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: String(value) }));
     el.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
     el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: String(value) }));
-    // 4. change + blur 触发表单校验
     el.dispatchEvent(new Event('change', { bubbles: true }));
-    el.dispatchEvent(new Event('blur', { bubbles: true }));
-    if (wasReadOnly) el.setAttribute('readonly', ''); // 恢复 readonly
+    el.dispatchEvent(new Event('blur',   { bubbles: true }));
+
+    if (wasReadOnly) el.setAttribute('readonly', '');
+    return true;
+  }
+
+  // 自动完成输入框：填入文字后等待候选列表出现，点击最匹配项
+  // 适用于 BOSS直聘"学校名称"等搜索型输入框
+  async function fillAutocompleteInput(el, value) {
+    fillInput(el, value);
+    await sleep(400); // 等候选列表渲染
+
+    const SUGGEST_SEL = [
+      '.list-item-container',
+      '.phoenix-selectList__listItem',
+      '[class*="selectList__item"]',
+      '[class*="suggest-item"]',
+      '[class*="suggestion-item"]',
+    ].join(',');
+
+    // 优先在弹出层里找，其次全页找
+    const layer = document.querySelector('.common-unmodeled-layer:not(.common-unmodeled-layer-hidden)');
+    let items = layer ? [...layer.querySelectorAll(SUGGEST_SEL)] : [];
+    if (!items.length) items = [...document.querySelectorAll(SUGGEST_SEL)]
+      .filter(i => !i.closest('#__rf_panel__'));
+    if (!items.length) return true; // 无候选 → 当普通文本输入处理
+
+    const v = String(value).trim();
+    // 精确匹配 → 包含匹配 → 反向包含 → 直接取第一项
+    const best =
+      items.find(i => i.textContent.trim() === v) ||
+      items.find(i => i.textContent.trim().includes(v)) ||
+      items.find(i => v.includes(i.textContent.trim()) && i.textContent.trim().length > 1) ||
+      items[0];
+
+    if (best) {
+      ['mousedown', 'mouseup', 'click'].forEach(t =>
+        best.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }))
+      );
+      await sleep(200);
+    }
     return true;
   }
 
@@ -527,64 +791,393 @@
     return true;
   }
 
-  function fillCustomSelect(el, value, key) {
+  // ===== 日期选择器处理 =====
+  function isDatePickerEl(el) {
+    const cls = (el.className || '').toLowerCase();
+    if (/date|month|year|calendar|picker/.test(cls)) return true;
+    // 也检查祖先 class（input 本身可能叫 phoenix-select__input，但父容器叫 phoenix-date-picker）
+    let node = el.parentElement;
+    for (let i = 0; i < 4 && node; i++) {
+      if (/date|calendar|picker/.test((node.className || '').toLowerCase())) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  // 解析日期字符串 → {year, month, day}
+  function parseDateValue(value) {
+    const s = String(value).trim();
+    const m = s.match(/(\d{4})[年\-\/\.](\d{1,2})(?:[月\-\/\.](\d{1,2}))?/);
+    if (m) return { year: parseInt(m[1]), month: parseInt(m[2]), day: m[3] ? parseInt(m[3]) : 1 };
+    return null;
+  }
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // 等待某选择器出现（最多 maxMs 毫秒）
+  function waitForEl(selector, maxMs = 1500) {
+    return new Promise(resolve => {
+      const el = document.querySelector(selector);
+      if (el) { resolve(el); return; }
+      const ob = new MutationObserver(() => {
+        const found = document.querySelector(selector);
+        if (found) { ob.disconnect(); resolve(found); }
+      });
+      ob.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => { ob.disconnect(); resolve(null); }, maxMs);
+    });
+  }
+
+  // 日历面板选择器（宽泛匹配各平台）
+  const CALENDAR_PANEL_SEL = [
+    '.phoenix-date-picker',                    // BOSS直聘 Phoenix（参考项目确认）
+    '.phoenix-calendar-picker-container',
+    '[class*="phoenix-calendar"]',
+    '[class*="date-picker-popup"]',
+    '[class*="date-picker-panel"]',
+    '[class*="calendar-picker"]',
+    '[class*="datepicker-popup"]',
+    '.el-date-picker',                         // Element UI
+    '.ant-picker-dropdown',                    // Ant Design
+    '.ant-calendar-picker-container',
+  ].join(',');
+
+  // 等日历面板出现并且在视口内可见
+  async function waitForCalendar(maxMs = 2000) {
+    const start = Date.now();
+    while (Date.now() - start < maxMs) {
+      // Phoenix：先找弹出层，再从里面找 .phoenix-date-picker（参考项目做法）
+      const layer = document.querySelector('.common-unmodeled-layer:not(.common-unmodeled-layer-hidden)');
+      if (layer) {
+        const dp = layer.querySelector('.phoenix-date-picker');
+        if (dp && getComputedStyle(dp).display !== 'none' && dp.offsetWidth > 0) return dp;
+      }
+      // 通用：直接找日历面板
+      const panels = document.querySelectorAll(CALENDAR_PANEL_SEL);
+      for (const p of panels) {
+        if (p.closest('#__rf_panel__')) continue;
+        const st = getComputedStyle(p);
+        if (st.display !== 'none' && st.visibility !== 'hidden' && p.offsetWidth > 0) {
+          return p;
+        }
+      }
+      await sleep(80);
+    }
+    return null;
+  }
+
+  // Phoenix 日历导航：年份 → 月份 → （日期） → 确认
+  async function navigatePhoenixCalendar(date) {
+    const panel = await waitForCalendar(2000);
+    if (!panel) return false;
+    await sleep(200);
+
+    // —— 年份 ——
+    // 先尝试点击年份选择触发器（切换到年份选择面板）
+    const yearTrigger = panel.querySelector([
+      '[class*="month-panel-year-select"]',    // Phoenix: phoenix-calendar-month-panel-year-select
+      '.phoenix-calendar-year-select',
+      '[class*="year-select"]',
+      '[class*="calendar-header-year"]',
+      '.ant-picker-year-btn',
+      '.el-date-picker__header-label',
+    ].join(','));
+
+    if (yearTrigger) {
+      yearTrigger.click();
+      await sleep(250);
+
+      // 切换十年段直到目标年在当前段
+      for (let i = 0; i < 20; i++) {
+        const decadeLabel = panel.querySelector([
+          '[class*="year-panel-decade-select"]',
+          '[class*="decade-select-content"]',
+          '[class*="decade-select"]',
+        ].join(','));
+        if (!decadeLabel) break;
+        const nums = decadeLabel.textContent.match(/\d{4}/g);
+        if (!nums || nums.length < 1) break;
+        const start = parseInt(nums[0]);
+        if (date.year >= start && date.year < start + 10) break;
+        const navBtn = date.year < start
+          ? panel.querySelector('[class*="prev-decade-btn"],[class*="prev-decade"]')
+          : panel.querySelector('[class*="next-decade-btn"],[class*="next-decade"]');
+        if (!navBtn) break;
+        navBtn.click();
+        await sleep(150);
+      }
+
+      // 点目标年份格
+      const yearCells = panel.querySelectorAll([
+        '[class*="year-panel-year"]:not([class*="last-decade"]):not([class*="next-decade"])',
+        '.ant-picker-cell-inner',
+        '.el-year-table td',
+      ].join(','));
+      for (const cell of yearCells) {
+        const t = cell.textContent.trim().replace(/年$/, '');
+        if (t === String(date.year)) { cell.click(); await sleep(250); break; }
+      }
+    }
+
+    // —— 月份 ——
+    // —— 月份：先点触发器切换到月份面板，再点目标月（参考项目：monthToggleSelectors）——
+    const monthTrigger = panel.querySelector([
+      '.phoenix-calendar-month-select',        // Phoenix（同时作 toggle）
+      '[class*="month-select"]',
+      '[class*="calendar-header-month"]',
+      '.ant-picker-month-btn',
+    ].join(','));
+    if (monthTrigger) { monthTrigger.click(); await sleep(250); }
+
+    const monthCells = panel.querySelectorAll([
+      '[class^="phoenix-calendar-month-panel-month"]', // Phoenix（精确 startsWith）
+      '[class*="month-panel-month"]',
+      '.ant-picker-cell',
+      '.el-month-table td',
+    ].join(','));
+    // 按文字匹配月份（比 index 更可靠，因为有些面板会有空格占位）
+    let monthClicked = false;
+    for (const cell of monthCells) {
+      const t = cell.textContent.trim();
+      if (parseInt(t) === date.month || t === String(date.month) + '月') {
+        cell.click(); await sleep(200); monthClicked = true; break;
+      }
+    }
+    // 文字匹配失败时 fallback 到 index（至少有 12 个格子时）
+    if (!monthClicked && monthCells.length >= 12) {
+      monthCells[date.month - 1].click();
+      await sleep(200);
+    }
+
+    // —— 具体日期（如有）——
+    if (date.day) {
+      const dayCells = panel.querySelectorAll([
+        '[class*="calendar-date"]:not([class*="last-month"]):not([class*="next-month"])',
+        '.ant-picker-cell:not(.ant-picker-cell-disabled)',
+        '.el-date-table td.available',
+      ].join(','));
+      for (const cell of dayCells) {
+        if (cell.textContent.trim() === String(date.day)) { cell.click(); await sleep(150); break; }
+      }
+    }
+
+    // —— 确认按钮（部分平台需点击）——
+    const confirmBtn = panel.querySelector([
+      '.phoenix-button__wraper--primary',
+      '[class*="picker-ok"]',
+      '[class*="confirm-btn"]',
+      '.ant-picker-ok button',
+    ].join(','));
+    if (confirmBtn) { confirmBtn.click(); await sleep(200); }
+
+    return true;
+  }
+
+  // 判断是否 Phoenix/受控 日期选择器（不能靠直接注字，必须走日历导航）
+  function isPhoenixDatePicker(el) {
+    // 检查自身及祖先 class（BOSS直聘 inner input 叫 phoenix-select__input，外层叫 phoenix-date-picker）
+    let node = el;
+    for (let i = 0; i < 5 && node; i++) {
+      if (/phoenix.*(date|picker|calendar)/i.test(node.className || '')) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  // 日期填写主函数
+  async function fillDatePicker(el, value) {
+    const date = parseDateValue(value);
+    if (!date) return false;
+
+    const inner = el.tagName === 'INPUT' ? el : el.querySelector('input');
+
+    // Phoenix 受控组件：点外层 phoenix-select 容器（参考项目做法），再走日历导航
+    if (isPhoenixDatePicker(el)) {
+      // 找外层 .phoenix-select 容器（如果 el 本身就是内部 input，则向上找）
+      const outerSelect = el.closest('.phoenix-select') ||
+                          el.closest('[class*="phoenix-select"]') || el;
+      outerSelect.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
+      outerSelect.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await sleep(400);
+      const ok = await navigatePhoenixCalendar(date);
+      if (ok) return true;
+      // 日历未出现（可能是误判），关闭后降级到直接文本注入
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
+      document.body.click();
+      await sleep(100);
+      // 降级：走下方直接文本注入流程
+    }
+
+    // 非 Phoenix：先试直接文本注入（原生 input[type=month/date/text]）
+    if (inner) {
+      // 参考 jobfill-main 的事件序列：clear → set → 完整事件链 → blur/focus pulse
+      inner.focus();
+      for (const t of ['mousedown','mouseup','click'])
+        inner.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window }));
+      await sleep(150);
+
+      // clear
+      const proto = Object.getPrototypeOf(inner);
+      const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+      if (setter) setter.call(inner, ''); else inner.value = '';
+      inner.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // set
+      if (setter) setter.call(inner, value); else inner.value = value;
+      inner.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: value }));
+      inner.dispatchEvent(new Event('compositionstart', { bubbles: true }));
+      inner.dispatchEvent(new Event('compositionend', { bubbles: true }));
+      inner.dispatchEvent(new Event('change', { bubbles: true }));
+      inner.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+
+      // blur → focus pulse（jobfill-main 技巧，触发框架重新校验）
+      await sleep(100);
+      inner.dispatchEvent(new Event('blur', { bubbles: true }));
+      await sleep(100);
+      inner.focus();
+      inner.dispatchEvent(new Event('input', { bubbles: true }));
+      inner.dispatchEvent(new Event('change', { bubbles: true }));
+
+      await sleep(300);
+
+      // React reconcile 后再检查（等 300ms 足够一个渲染周期）
+      if (inner.value && inner.value.includes(String(date.year))) return true;
+
+      // 直接注字无效，点开日历
+      inner.click();
+      await sleep(400);
+    } else {
+      el.click();
+      await sleep(400);
+    }
+
+    const ok = await navigatePhoenixCalendar(date);
+    if (!ok) {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
+      document.body.click();
+    }
+    return ok;
+  }
+
+  async function fillCustomSelect(el, value, key) {
+    // 0. 已知日期控件（class 含 date/picker/calendar）直接走日历填写
+    if (isDatePickerEl(el)) {
+      return fillDatePicker(el, value);
+    }
+
     // 1. 优先尝试 Phoenix Fiber 方式（BOSS直聘 React 组件）
-    if (triggerPhoenixSelect(el, value)) return;
+    if (triggerPhoenixSelect(el, value)) return true;
 
     const v = String(value).trim();
-    let done = false;
 
-    const finish = (opt) => {
-      if (done) return;
-      done = true;
-      observer.disconnect();
-      ['mousedown', 'mouseup', 'click'].forEach(type =>
-        opt.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
-      );
-      el.classList.remove('__rf_matched__', '__rf_unmatched__');
-      el.classList.add('__rf_filled__');
-    };
-
-    const trySelect = () => {
-      const opt = findMatchingOption(v);
-      if (opt) { finish(opt); return true; }
-      return false;
-    };
-
-    // 2. MutationObserver 监听选项出现
-    const observer = new MutationObserver(() => trySelect());
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // 3. 触发展开
+    // 2. 触发展开（找外层 phoenix-select 容器，参考项目做法）
+    const outerSelect = el.closest('.phoenix-select') ||
+                        el.closest('[class*="phoenix-select"]') || el;
+    outerSelect.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
     ['mousedown', 'mouseup', 'click'].forEach(type =>
-      el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
+      outerSelect.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
     );
+    await sleep(400);
 
-    // 4. 已有选项则直接命中
-    if (trySelect()) return;
-
-    // 5. combobox 模式：展开后往内部 input 注字触发筛选，再等选项
-    setTimeout(() => {
-      if (done) return;
-      injectInnerInput(el, v);
-      // 再等一轮选项渲染（最多 2.5s）
-      setTimeout(() => {
-        observer.disconnect();
-        if (!done) {
-          if (!trySelect()) {
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-            console.warn(`[ResumeFiller] 自定义下拉无匹配选项 key=${key} value="${v}"`);
-            log(`⚠ ${key ? (KEY_ZH[key]||key) : '自定义下拉'}: 无匹配选项（值="${v}"）`);
-          }
+    // 3. 检查弹出的是日期面板还是普通下拉（参考项目核心逻辑）
+    const layer = document.querySelector('.common-unmodeled-layer:not(.common-unmodeled-layer-hidden)');
+    if (layer) {
+      const dp = layer.querySelector('.phoenix-date-picker') ||
+                 document.querySelector('.phoenix-date-picker:not([style*="display: none"])');
+      if (dp && dp.offsetWidth > 0) {
+        // 弹出的是日期面板 → 走日历导航
+        const date = parseDateValue(v);
+        if (!date) { return false; }
+        const ok = await navigatePhoenixCalendar(date);
+        if (!ok) {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
+          document.body.click();
         }
-      }, 2500);
-    }, 250); // 等下拉动画展开
+        return ok;
+      }
+    }
+
+    // 4. 普通下拉：用 MutationObserver + 选项匹配
+    return new Promise(resolve => {
+      let done = false;
+
+      const finish = (opt) => {
+        if (done) return;
+        done = true;
+        observer.disconnect();
+        ['mousedown', 'mouseup', 'click'].forEach(type =>
+          opt.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
+        );
+        el.classList.remove('__rf_matched__', '__rf_unmatched__');
+        el.classList.add('__rf_filled__');
+        setTimeout(() => resolve(true), 300);
+      };
+
+      const trySelect = () => {
+        const opt = findMatchingOption(v);
+        if (opt) { finish(opt); return true; }
+        return false;
+      };
+
+      const observer = new MutationObserver(() => trySelect());
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      if (trySelect()) return;
+
+      // combobox 模式：往内部 input 注字触发筛选
+      setTimeout(() => {
+        if (done) return;
+        injectInnerInput(outerSelect, v);
+        setTimeout(() => {
+          observer.disconnect();
+          if (!done) {
+            done = true;
+            if (!trySelect()) {
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              console.warn(`[ResumeFiller] 自定义下拉无匹配选项 key=${key} value="${v}"`);
+              log(`⚠ ${key ? (KEY_ZH[key]||key) : '自定义下拉'}: 无匹配选项（值="${v}"）`);
+              resolve(false);
+            }
+          }
+        }, 2500);
+      }, 250);
+    });
   }
 
   // ===== 扫描 =====
   let scannedPairs = []; // [{el, key, type}]
 
-  document.getElementById('__rf_scan__').addEventListener('click', () => {
+  // 扫描前：根据简历数据条数，自动点击「+添加」按钮展开多条记录
+  async function preExpandSections() {
+    const { resumeData } = await new Promise(r => chrome.storage.local.get('resumeData', r));
+    if (!resumeData) return;
+    const sections = [
+      { items: resumeData.education  || [], btnText: /添加教育|添加学习|添加学校/ },
+      { items: resumeData.work       || [], btnText: /添加工作|添加工作经历/ },
+      { items: resumeData.internship || [], btnText: /添加实习/ },
+      { items: resumeData.projects   || [], btnText: /添加项目/ },
+    ];
+    for (const { items, btnText } of sections) {
+      if (items.length <= 1) continue;
+      // 找「+添加」按钮
+      const addBtn = [...document.querySelectorAll('button, a, span, div')]
+        .find(el => !el.closest('#__rf_panel__') && btnText.test(el.textContent.trim()));
+      if (!addBtn) continue;
+      // 估算当前已有几条：找该按钮上方同级容器中含输入框的区块数量
+      const parent = addBtn.parentElement;
+      const siblings = parent ? [...parent.children] : [];
+      const existingCount = siblings.filter(s =>
+        s !== addBtn && s.querySelector('input, [class*="phoenix-select"]')
+      ).length;
+      const toAdd = Math.max(0, items.length - Math.max(existingCount, 1));
+      for (let i = 0; i < toAdd; i++) {
+        addBtn.click();
+        await sleep(500);
+      }
+    }
+  }
+
+  document.getElementById('__rf_scan__').addEventListener('click', async () => {
     clearLog();
     scannedPairs = [];
     document.querySelectorAll('.__rf_matched__, .__rf_filled__, .__rf_unmatched__').forEach(el => {
@@ -608,18 +1201,22 @@
     );
     inputs.forEach(el => {
       if (el.disabled || el.closest('#__rf_panel__')) return;
-      // 只读字段：只允许日期/时间相关（日历picker产生的 readonly input）
-      if (el.readOnly && !/(日期|时间|date|time)/i.test(getHint(el))) return;
+      // readonly 不跳过——fillInput 会临时解除 readonly；
+      // 只跳过完全没有视觉尺寸的隐藏输入（宽高均为 0）
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return;
+
       const hint = getHint(el);
       const key = matchKey(hint);
       if (key) {
-        // 纯文本字段不匹配 select，避免误匹配周边同名 label 导致重复警告
+        // 原生 SELECT 标签 + TEXT_ONLY_KEYS：说明这个 <select> 是页面里
+        // 同名 label 引起的误匹配，跳过（school/major 等实际上是文本框）
         if (el.tagName === 'SELECT' && TEXT_ONLY_KEYS.has(key)) {
           unmatched.push({ el, hint });
           el.classList.add('__rf_unmatched__');
           return;
         }
-        scannedPairs.push({ el, key, type: el.tagName === 'SELECT' ? 'select' : 'input' });
+        scannedPairs.push({ el, key, type: el.tagName === 'SELECT' ? 'select' : isDatePickerEl(el) ? 'date' : 'input', pageLabel: extractBestLabel(el) });
         el.classList.add('__rf_matched__');
       } else {
         unmatched.push({ el, hint });
@@ -627,16 +1224,27 @@
       }
     });
 
-    // 自定义下拉框（同样跳过纯文本字段，避免误匹配）
+    // 自定义下拉框
+    // TEXT_ONLY_KEYS 里的字段（school/company 等）在某些平台也会用自定义下拉（如学校搜索框）
+    // 只要还没被原生 input 匹配过，就允许作为 custom 类型匹配
     getCustomSelects().forEach(el => {
-      if (scannedPairs.some(p => p.el === el)) return;
+      // 同一元素 或 包含/被包含关系 都跳过（避免 inner input + outer container 重复）
+      if (scannedPairs.some(p => p.el === el || el.contains(p.el) || p.el.contains(el))) return;
+      if (el.closest('#__rf_panel__')) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return;
       const hint = getHint(el);
       const key = matchKey(hint);
-      if (key && !TEXT_ONLY_KEYS.has(key)) {
-        scannedPairs.push({ el, key, type: 'custom' });
+      if (key) {
+        scannedPairs.push({ el, key, type: isDatePickerEl(el) ? 'date' : 'custom', pageLabel: extractBestLabel(el) });
         el.classList.add('__rf_matched__');
       }
     });
+
+    // 按 DOM 顺序排序，确保从上到下依次填写
+    scannedPairs.sort((a, b) =>
+      a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
 
     // F12 控制台详细调试（折叠组，不影响面板）
     console.groupCollapsed(`[ResumeFiller] 扫描结果：匹配 ${scannedPairs.length} 个，未识别 ${unmatched.length} 个`);
@@ -672,82 +1280,219 @@
     }
   });
 
-  // ===== 把嵌套数据展平为 key→value =====
+  // ===== 按出现次序取对应条目的值（支持多条经历）=====
+  // n = 该 key 在 scannedPairs 中第几次出现（0-based）
+  function getValueForOccurrence(d, key, n) {
+    if (!d) return '';
+    const str = v => (v == null ? '' : Array.isArray(v) ? v.join('、') : String(v));
+    const p  = d.personal  || {};
+    const it = d.intention || {};
+    const s  = d.skills    || {};
+
+    // 多条目 key 组
+    const EDU_KEYS  = new Set(['school','major','degree','edu_start','edu_end','gpa','edu_rank','edu_department','advisor','lab','scholarship','exchange_student']);
+    const WORK_KEYS = new Set(['company','position','work_start','work_end','work_desc']);
+    const PROJ_KEYS = new Set(['proj_name','proj_role','proj_desc','proj_start','proj_end']);
+
+    if (EDU_KEYS.has(key)) {
+      const edu = (d.education || [])[n] || {};
+      const map = { school:str(edu.school), major:str(edu.major), degree:str(edu.degree),
+        edu_start:str(edu.start), edu_end:str(edu.end), gpa:str(edu.gpa), edu_rank:str(edu.rank),
+        edu_department:str(edu.department), advisor:str(edu.advisor), lab:str(edu.lab),
+        scholarship:str(edu.honors), exchange_student:str(edu.exchange) };
+      return map[key] || '';
+    }
+    if (WORK_KEYS.has(key)) {
+      // 工作 + 实习合并，按时间先后
+      const all = [...(d.work || []), ...(d.internship || [])];
+      const entry = all[n] || {};
+      const map = { company:str(entry.company), position:str(entry.position),
+        work_start:str(entry.start), work_end:str(entry.end), work_desc:str(entry.desc) };
+      return map[key] || '';
+    }
+    if (PROJ_KEYS.has(key)) {
+      const proj = (d.projects || [])[n] || {};
+      const map = { proj_name:str(proj.name), proj_role:str(proj.role), proj_desc:str(proj.desc),
+        proj_start:str(proj.start), proj_end:str(proj.end) };
+      return map[key] || '';
+    }
+
+    // 单值 key（个人信息、意向等）
+    const flat = {
+      name:str(p.name), gender:str(p.gender), birthday:str(p.birthday), age:str(p.age),
+      phone:str(p.phone), email:str(p.email), wechat:str(p.wechat), qq:str(p.qq),
+      id_number:str(p.id_number), political:str(p.political), ethnicity:str(p.ethnicity),
+      nationality:str(p.nationality),
+      hometown:[p.hometown_province, p.hometown_city].filter(Boolean).join(''),
+      city:str(p.current_city), address:str(p.address), marital:str(p.marital),
+      height:str(p.height), weight:str(p.weight),
+      job_status:str(it.status), job_type:str(it.type), industry:str(it.industry),
+      intention:str(it.position), job_city:str(it.city), salary:str(it.salary), available:str(it.available),
+      skills:str(s.tech), certificates:str(s.certificates), cover_letter:str(s.cover_letter),
+      intro:str(d.intro), github:str(d.github), homepage:str(d.homepage),
+    };
+    return flat[key] || '';
+  }
+
+  // 兼容旧调用（AI 模式等）
   function flattenData(d) {
     if (!d) return {};
-    const p   = d.personal   || {};
-    const it  = d.intention  || {};
-    const edu = (d.education  || [])[0] || {};
-    const wrk = (d.work       || [])[0] || (d.internship || [])[0] || {};
-    const itn = (d.internship || [])[0] || {};
-    const s   = d.skills     || {};
-    // 安全转字符串：防止 AI 解析出数组/对象导致 .trim() 崩溃
+    const keys = ['name','gender','birthday','age','phone','email','wechat','qq','id_number',
+      'political','ethnicity','nationality','hometown','city','address','marital','height','weight',
+      'job_status','job_type','industry','intention','job_city','salary','available',
+      'school','major','degree','edu_start','edu_end','gpa','edu_rank','edu_department',
+      'company','position','work_start','work_end','work_desc',
+      'proj_name','proj_role','proj_desc','skills','certificates','cover_letter','intro','github','homepage'];
+    const result = {};
+    keys.forEach(k => result[k] = getValueForOccurrence(d, k, 0));
+    return result;
+  }
+
+  // ===== 通用单字段填写（正则 & AI 模式共用）=====
+  // typeHint: 'select' | 'custom' | 'input' | null（null 时按 tagName 自动判断）
+  async function fillOneField(el, value, typeHint, label) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.focus();
+    hlFilling(el);
+    log(`  ⌨ ${label || '字段'}…`);
+
+    // 日期/下拉框需要更长等待
+    const isDropdown = typeHint === 'select' || typeHint === 'custom' || typeHint === 'date' ||
+      (!typeHint && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA');
+    await new Promise(r => setTimeout(r, isDropdown ? 300 : 180));
+
+    const tag = el.tagName;
+    // typeHint 优先；否则按 tagName 推断；对原生 input 也检测日期选择器
+    const resolvedType = typeHint || (
+      tag === 'SELECT' ? 'select' :
+      (tag === 'INPUT' || tag === 'TEXTAREA')
+        ? (isDatePickerEl(el) ? 'date' : 'input')
+        : (isDatePickerEl(el) ? 'date' : 'custom')
+    );
+
+    let ok = false;
+    if (resolvedType === 'select') {
+      ok = fillSelect(el, value, label);
+    } else if (resolvedType === 'date') {
+      ok = await fillDatePicker(el, value);
+    } else if (resolvedType === 'custom') {
+      ok = await fillCustomSelect(el, value, label);
+    } else {
+      // phoenix-input__input 可能是搜索型自动完成框（如学校名称），填入后需点选候选项
+      if (el.classList.contains('phoenix-input__input')) {
+        ok = await fillAutocompleteInput(el, value);
+      } else {
+        ok = fillInput(el, value);
+        await new Promise(r => setTimeout(r, 60));
+      }
+    }
+
+    if (ok) {
+      el.classList.remove('__rf_matched__', '__rf_unmatched__');
+      el.classList.add('__rf_filled__');
+      hlDone(el);
+    } else {
+      hlFailed(el);
+    }
+    return ok;
+  }
+
+  // ===== 多条经历补充填写 =====
+  async function fillAdditionalEntries(d) {
     const str = v => (v == null ? '' : Array.isArray(v) ? v.join('、') : String(v));
-    return {
-      name: str(p.name), gender: str(p.gender), birthday: str(p.birthday), age: str(p.age),
-      phone: str(p.phone), email: str(p.email), wechat: str(p.wechat), qq: str(p.qq),
-      id_number: str(p.id_number), political: str(p.political), ethnicity: str(p.ethnicity),
-      nationality: str(p.nationality),
-      hometown: [p.hometown_province, p.hometown_city].filter(Boolean).join(''),
-      city: str(p.current_city), address: str(p.address), marital: str(p.marital),
-      height: str(p.height), weight: str(p.weight),
-      job_status: str(it.status), job_type: str(it.type), industry: str(it.industry),
-      intention: str(it.position), job_city: str(it.city), salary: str(it.salary), available: str(it.available),
-      school: str(edu.school), major: str(edu.major), degree: str(edu.degree),
-      edu_start: str(edu.start), edu_end: str(edu.end), gpa: str(edu.gpa), edu_rank: str(edu.rank),
-      edu_department: str(edu.department), advisor: str(edu.advisor), lab: str(edu.lab),
-      scholarship: str(edu.honors), exchange_student: str(edu.exchange),
-      company:    str(itn.company   || wrk.company),
-      position:   str(itn.position  || wrk.position),
-      work_start: str(itn.start     || wrk.start),
-      work_end:   str(itn.end       || wrk.end),
-      work_desc:  str(itn.desc      || wrk.desc),
-      skills: str(s.tech), certificates: str(s.certificates), cover_letter: str(s.cover_letter),
-      intro: str(d.intro), github: str(d.github), homepage: str(d.homepage),
-    };
+    let extraFilled = 0;
+
+    const SECTIONS = [
+      {
+        entries: d.education || [],
+        btnText: /添加教育/,
+        keys: new Set(['school','major','degree','edu_start','edu_end','gpa','edu_rank','edu_department']),
+        getFlat: (e) => ({ school:str(e.school), major:str(e.major), degree:str(e.degree),
+          edu_start:str(e.start), edu_end:str(e.end), gpa:str(e.gpa), edu_rank:str(e.rank),
+          edu_department:str(e.department) })
+      },
+      {
+        entries: [...(d.work || []), ...(d.internship || [])],
+        btnText: /添加工作|添加实习/,
+        keys: new Set(['company','position','work_start','work_end','work_desc']),
+        getFlat: (e) => ({ company:str(e.company), position:str(e.position),
+          work_start:str(e.start), work_end:str(e.end), work_desc:str(e.desc) })
+      },
+      {
+        entries: d.projects || [],
+        btnText: /添加项目/,
+        keys: new Set(['proj_name','proj_role','proj_desc','proj_start','proj_end']),
+        getFlat: (e) => ({ proj_name:str(e.name), proj_role:str(e.role), proj_desc:str(e.desc),
+          proj_start:str(e.start), proj_end:str(e.end) })
+      },
+    ];
+
+    for (const { entries, btnText, keys, getFlat } of SECTIONS) {
+      for (let i = 1; i < entries.length; i++) {
+        const addBtn = [...document.querySelectorAll('button,a,span,div')]
+          .find(el => !el.closest('#__rf_panel__') && btnText.test(el.textContent.trim()));
+        if (!addBtn) continue;
+
+        log(`➕ 添加第 ${i + 1} 条经历…`);
+        addBtn.click();
+        await sleep(700);
+
+        // 扫描所有未填字段，取属于本 section 的
+        const entryFlat = getFlat(entries[i]);
+        const candidates = [
+          ...document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=file]):not([type=checkbox]):not([type=radio]),textarea,select'),
+          ...getCustomSelects()
+        ].filter(el => {
+          if (el.closest('#__rf_panel__')) return false;
+          if (el.classList.contains('__rf_filled__')) return false;
+          const r = el.getBoundingClientRect();
+          return r.width > 0 || r.height > 0;
+        });
+
+        for (const el of candidates) {
+          const hint = getHint(el);
+          const key = matchKey(hint);
+          if (!key || !keys.has(key)) continue;
+          if (el.classList.contains('__rf_filled__')) continue;
+          const value = entryFlat[key];
+          if (!value) continue;
+          const type = el.tagName === 'SELECT' ? 'select'
+            : isDatePickerEl(el) ? 'date'
+            : (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') ? 'input' : 'custom';
+          const label = extractBestLabel(el) || KEY_ZH[key] || key;
+          const ok = await fillOneField(el, value, type, label);
+          if (ok) extraFilled++;
+        }
+      }
+    }
+    return extraFilled;
   }
 
   // ===== 基础模式填写 =====
   document.getElementById('__rf_fill__').addEventListener('click', () => {
     chrome.storage.local.get('resumeData', async ({ resumeData }) => {
       if (!resumeData) { log('⚠ 请先保存简历信息'); return; }
-      const flat = flattenData(resumeData);
       let filled = 0;
       const failNoData = [], failFill = [];
+      // Phase 1：用第 0 条数据填当前可见字段（稳定路径，与旧逻辑一致）
+      const flat = flattenData(resumeData);
 
-      for (const { el, key, type } of scannedPairs) {
+      log(`开始填写 ${scannedPairs.length} 个字段…`);
+      for (const { el, key, type, pageLabel } of scannedPairs) {
         const value = flat[key];
+        const label = pageLabel || KEY_ZH[key] || key;
         if (!value) {
-          failNoData.push(KEY_ZH[key] || key);
+          failNoData.push(label);
           hlFailed(el);
           continue;
         }
-
-        // 滚动到视口 + 蓝色高亮提示"正在填"
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        hlFilling(el);
-        await new Promise(r => setTimeout(r, 120));
-
-        let ok = false;
-        if (type === 'select') {
-          ok = fillSelect(el, value, key);
-        } else if (type === 'custom') {
-          fillCustomSelect(el, value, key);
-          ok = true;
-        } else {
-          ok = fillInput(el, value);
-        }
-
-        if (ok) {
-          el.classList.remove('__rf_matched__', '__rf_unmatched__');
-          el.classList.add('__rf_filled__');
-          hlDone(el);
-          filled++;
-        } else {
-          hlFailed(el);
-          failFill.push(KEY_ZH[key] || key);
-        }
+        const ok = await fillOneField(el, value, type, label);
+        if (ok) filled++;
+        else failFill.push(label);
       }
+
+      // Phase 2：补充第 1、2... 条经历（点添加按钮 → 填新出现的空字段）
+      filled += await fillAdditionalEntries(resumeData);
 
       clearLog();
       log(`✅ 已填写 ${filled} / ${scannedPairs.length} 个字段`);
@@ -885,34 +1630,18 @@
     const filledTokens = new Set(pairs.map(p => p.token));
     let filled = 0;
 
-    for (const { token, value } of pairs) {
+    log(`AI 返回 ${pairs.length} 个字段，开始填写…`);
+    for (const { token, value, label: aiLabel } of pairs) {
       if (!token || value === undefined || value === null || value === '') continue;
       const el = document.querySelector(`[data-rf-token="${token}"]`);
       if (!el) continue;
 
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      hlFilling(el);
-      await new Promise(r => setTimeout(r, 100));
+      // 从 elementDict 找对应的 label 用于日志显示
+      const dictItem = elementDict?.find(d => d.token === token);
+      const label = aiLabel || dictItem?.label || dictItem?.placeholder || token;
 
-      const tagName = el.tagName;
-      let ok = false;
-      if (tagName === 'SELECT') {
-        ok = fillSelect(el, String(value), null);
-      } else if (tagName === 'INPUT' || tagName === 'TEXTAREA') {
-        ok = fillInput(el, String(value));
-      } else {
-        fillCustomSelect(el, String(value), null);
-        ok = true;
-      }
-
-      if (ok) {
-        el.classList.remove('__rf_matched__', '__rf_unmatched__');
-        el.classList.add('__rf_filled__');
-        hlDone(el);
-        filled++;
-      } else {
-        hlFailed(el);
-      }
+      const ok = await fillOneField(el, String(value), null, label);
+      if (ok) filled++;
     }
 
     // ===== 问题3：检测未匹配字段，自动添加到简历模板 =====
@@ -1223,6 +1952,7 @@
     }
 
     if (msg.type === 'SHOW_PANEL') {
+      trigger.style.display = 'none';
       panel.style.display = '';
       panel.style.left = 'auto'; panel.style.top = 'auto';
       panel.style.right = '24px'; panel.style.bottom = '24px';
@@ -1232,8 +1962,16 @@
 
     if (msg.type === 'TOGGLE_PANEL') {
       const wasVisible = panel.style.display !== 'none';
-      panel.style.display = wasVisible ? 'none' : '';
-      if (!wasVisible) {
+      if (wasVisible) {
+        // 隐藏面板，显示小图标
+        panel.style.display = 'none';
+        trigger.style.right = '24px'; trigger.style.bottom = '24px';
+        trigger.style.left = 'auto'; trigger.style.top = 'auto';
+        trigger.style.display = '';
+      } else {
+        // 展开面板，隐藏小图标
+        trigger.style.display = 'none';
+        panel.style.display = '';
         panel.style.left = 'auto'; panel.style.top = 'auto';
         panel.style.right = '24px'; panel.style.bottom = '24px';
       }
