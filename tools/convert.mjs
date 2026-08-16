@@ -63,8 +63,40 @@ for (const cfg of SHEET_CFG) {
   }
 }
 
-fs.writeFileSync(new URL('../岗位清单.json', import.meta.url), JSON.stringify(all, null, 2), 'utf8');
-console.log('总条数:', all.length);
-console.log('分类分布:', all.reduce((m, j) => { m[j.category] = (m[j.category] || 0) + 1; return m; }, {}));
-console.log('含链接条数:', all.filter((j) => j.link).length);
-console.log('样例:', JSON.stringify(all[0], null, 2));
+// ---- 去重合并：position+company 为去重键，首次为基准，填空不覆盖，note 片段去重累加 ----
+const mergeNotes = (...notes) => {
+  const map = new Map();
+  for (const n of notes) {
+    if (!n) continue;
+    for (const seg of String(n).split('；')) {
+      const t = seg.trim();
+      if (!t) continue;
+      const norm = t.replace(/\s+/g, '');
+      if (!map.has(norm)) map.set(norm, t);
+    }
+  }
+  return [...map.values()].join('；');
+};
+
+const merged = [];
+const index = new Map();
+for (const job of all) {
+  const key = (job.position || '').trim() + '|' + (job.company || '').trim();
+  const base = index.get(key);
+  if (!base) {
+    job.note = mergeNotes(job.note);
+    index.set(key, job);
+    merged.push(job);
+  } else {
+    for (const f of ['region', 'salary', 'competition', 'advantage', 'channel', 'link']) {
+      if (!base[f] && job[f]) base[f] = job[f];
+    }
+    base.note = mergeNotes(base.note, job.note);
+  }
+}
+
+fs.writeFileSync(new URL('../岗位清单.json', import.meta.url), JSON.stringify(merged, null, 2), 'utf8');
+console.log('总条数:', merged.length);
+console.log('分类分布:', merged.reduce((m, j) => { m[j.category] = (m[j.category] || 0) + 1; return m; }, {}));
+console.log('含链接条数:', merged.filter((j) => j.link).length);
+console.log('样例:', JSON.stringify(merged[0], null, 2));
