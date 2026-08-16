@@ -58,7 +58,7 @@
       if (f.status && f.status !== '全部' && j.status !== f.status) return false;
       if (region && j.region.indexOf(region) === -1) return false;
       if (kw) {
-        var hay = (j.position + ' ' + j.company + ' ' + j.note).toLowerCase();
+        var hay = (String(j.position || '') + ' ' + String(j.company || '') + ' ' + String(j.note || '')).toLowerCase();
         if (hay.indexOf(kw) === -1) return false;
       }
       return true;
@@ -75,13 +75,13 @@
         return a.deadline < b.deadline ? -1 : (a.deadline > b.deadline ? 1 : 0);
       });
     } else if (by === 'region') {
-      arr.sort(function (a, b) { return a.region.localeCompare(b.region, 'zh'); });
+      arr.sort(function (a, b) { return String(a.region || '').localeCompare(String(b.region || ''), 'zh'); });
     }
     return arr;
   }
 
   function isDeadlineSoon(j, today, days) {
-    if (!j.deadline || j.status !== '待投递') return false;
+    if (!j || !j.deadline || j.status !== '待投递') return false;
     var d = new Date(j.deadline + 'T00:00:00');
     var t = new Date(today + 'T00:00:00');
     if (isNaN(d.getTime()) || isNaN(t.getTime())) return false;

@@ -59,3 +59,14 @@ test('applyStatus 非法状态原样返回', () => {
   const j = { id: '1', status: '待投递' };
   assert.strictEqual(C.applyStatus(j, '随便'), j);
 });
+
+test('sortJobs 按 region 排序，空值安全不抛错', () => {
+  const list = [{ id: '1', region: '成都' }, { id: '2', region: '' }, { id: '3', region: '北京' }];
+  const r = C.sortJobs(list, 'region');
+  assert.strictEqual(r.length, 3);
+  assert.strictEqual(r[0].region, '');
+});
+
+test('isDeadlineSoon 空对象不抛错', () => {
+  assert.strictEqual(C.isDeadlineSoon(null, '2026-08-16', 3), false);
+});
