@@ -8,3 +8,9 @@ crops/
 .DS_Store
 Thumbs.db
 .claude/
+
+# 岗位清单数据（含真实求职信息，不上传）
+岗位清单.json
+
+# 转换工具依赖
+tools/node_modules/
