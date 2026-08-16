@@ -63,7 +63,7 @@ for (const cfg of SHEET_CFG) {
   }
 }
 
-// ---- 去重合并：position+company 为去重键，首次为基准，填空不覆盖，note 片段去重累加 ----
+// ---- 去重合并：position+company+region 为去重键，首次为基准，填空不覆盖，note 片段去重累加 ----
 const mergeNotes = (...notes) => {
   const map = new Map();
   for (const n of notes) {
@@ -81,7 +81,7 @@ const mergeNotes = (...notes) => {
 const merged = [];
 const index = new Map();
 for (const job of all) {
-  const key = (job.position || '').trim() + '|' + (job.company || '').trim();
+  const key = (job.position || '').trim() + '|' + (job.company || '').trim() + '|' + (job.region || '').trim();
   const base = index.get(key);
   if (!base) {
     job.note = mergeNotes(job.note);
