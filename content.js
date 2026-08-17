@@ -21,6 +21,8 @@
       <button id="__rf_jd_extract__" style="display:none">📋 提取 JD</button>
       <button id="__rf_ai_fill__" style="display:none">🤖 AI 填写</button>
       <button id="__rf_clear_hl__" style="display:none">🧹 清除高亮</button>
+      <button id="__rf_upload__">📁 上传材料</button>
+      <button id="__rf_materials__">📁 材料库</button>
       <button id="__rf_manage__">⚙ 管理简历</button>
     </div>
     <div id="__rf_log__"></div>
@@ -139,8 +141,14 @@
     #__rf_ai_fill__  { background: #7b2ff7; color: #fff; }
     #__rf_jd_extract__ { background: #2c7a7b; color: #fff; font-size: 12px; }
     #__rf_jd_extract__.jd-saved { background: #276749; }
-    #__rf_manage__   { background: #6b46c1; color: #e9d8fd; font-size: 12px; }
-    #__rf_clear_hl__ { background: #718096; color: #fff; font-size: 12px; }
+    #__rf_upload__    { background: #d97706; color: #fff; }
+    #__rf_materials__ { background: #4a5568; color: #fff; font-size: 12px; }
+    #__rf_manage__    { background: #6b46c1; color: #e9d8fd; font-size: 12px; }
+    #__rf_clear_hl__  { background: #718096; color: #fff; font-size: 12px; }
+    #__rf_file_picker__ { padding: 6px 12px 10px; }
+    .__rf_pick_row__ { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .__rf_pick_label__ { flex: 0 0 90px; font-size: 11px; color: #a0c4e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .__rf_pick_row__ select { flex: 1; min-width: 0; background: #2d3748; color: #e2e8f0; border: 1px solid #4a5568; border-radius: 4px; font-size: 11px; padding: 3px 4px; }
     #__rf_log__ {
       padding: 0 12px 10px;
       font-size: 11px;
@@ -1941,6 +1949,153 @@
 
   // ===== 初始化：始终显示模式切换 =====
   document.getElementById('__rf_mode__').classList.add('visible');
+
+  // ===== 材料上传 =====
+  const C = window.MaterialsCore;
+
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function scanFileInputs() {
+    return [...document.querySelectorAll('input[type=file]')]
+      .filter(el => !el.disabled && !el.closest('#__rf_panel__'));
+  }
+
+  function clearFilePicker() {
+    const old = document.getElementById('__rf_file_picker__');
+    if (old) old.remove();
+  }
+
+  function b64ToFile(b64, name, mime) {
+    const bytes = atob(b64);
+    const buf = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+    return new File([buf], name, { type: mime });
+  }
+
+  async function attachFileToInput(input, meta) {
+    try {
+      const key = `material:${meta.id}`;
+      const data = await new Promise(r => chrome.storage.local.get(key, r));
+      const b64 = data[key];
+      if (!b64) return false;
+      const file = b64ToFile(b64, meta.name, meta.mime);
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.classList.remove('__rf_matched__', '__rf_unmatched__');
+      input.classList.add('__rf_filled__');
+      hlDone(input);
+      return true;
+    } catch (e) {
+      hlFailed(input);
+      return false;
+    }
+  }
+
+  function renderManualPicker(pending, materials) {
+    clearFilePicker();
+    if (!pending.length) return;
+    const box = document.createElement('div');
+    box.id = '__rf_file_picker__';
+    box.innerHTML = pending.map(function (p, i) {
+      const options = C.CATEGORIES.flatMap(function (c) {
+        return materials.filter(function (m) { return m.category === c; })
+          .map(function (m) { return '<option value="' + escHtml(m.id) + '">' + escHtml(c) + '：' + escHtml(m.name) + '</option>'; });
+      }).join('');
+      const label = p.hint ? p.hint.slice(0, 16) : ('上传框' + (i + 1));
+      return '<div class="__rf_pick_row__">' +
+        '<span class="__rf_pick_label__" title="' + escHtml(p.hint || '') + '">' + escHtml(label) + '</span>' +
+        '<select data-idx="' + i + '"><option value="">— 选择材料 —</option>' + options + '</select>' +
+        '</div>';
+    }).join('');
+    document.getElementById('__rf_body__').appendChild(box);
+
+    box.querySelectorAll('select').forEach(function (sel) {
+      sel.addEventListener('change', async function () {
+        const meta = materials.find(function (m) { return m.id === sel.value; });
+        if (!meta) return;
+        const ok = await attachFileToInput(pending[Number(sel.dataset.idx)].el, meta);
+        sel.closest('.__rf_pick_row__').style.opacity = ok ? '0.4' : '';
+      });
+    });
+  }
+
+  async function runMaterialUpload() {
+    clearLog();
+    clearFilePicker();
+    document.querySelectorAll('.__rf_matched__, .__rf_filled__, .__rf_unmatched__').forEach(el => {
+      el.classList.remove('__rf_matched__', '__rf_filled__', '__rf_unmatched__');
+    });
+
+    const { materials } = await new Promise(r => chrome.storage.local.get('materials', r));
+    if (!Array.isArray(materials) || materials.length === 0) {
+      log('⚠ 材料库为空');
+      log('  → 点下方「材料库」先导入文件');
+      return;
+    }
+
+    const inputs = scanFileInputs();
+    if (inputs.length === 0) {
+      log('未找到文件上传框（input[type=file]）');
+      return;
+    }
+
+    const matched = [];
+    const pending = [];
+    inputs.forEach(function (el) {
+      const hint = getHint(el);
+      const category = C.matchMaterialCategory(hint);
+      const accept = el.getAttribute('accept') || '';
+      if (!category) {
+        pending.push({ el: el, hint: hint });
+        el.classList.add('__rf_unmatched__');
+        return;
+      }
+      const candidates = C.filterByAccept(materials, category, accept);
+      const meta = C.pickDefaultMaterial(candidates, category);
+      if (meta) {
+        matched.push({ el: el, meta: meta });
+        el.classList.add('__rf_matched__');
+      } else {
+        pending.push({ el: el, hint: hint });
+        el.classList.add('__rf_unmatched__');
+      }
+    });
+
+    log(`识别到 ${inputs.length} 个上传框：`);
+    log(`  ✅ 已匹配 ${matched.length} 个`);
+
+    let ok = 0;
+    for (const { el, meta } of matched) {
+      if (await attachFileToInput(el, meta)) ok++;
+    }
+
+    if (pending.length) {
+      log(`  ⚠ ${pending.length} 个待手动处理（下方选择）：`);
+      pending.slice(0, 5).forEach(({ hint }) => log(`  ? "${(hint || '').slice(0, 35)}"`));
+      renderManualPicker(pending, materials);
+    }
+
+    clearLog();
+    if (ok) {
+      log(`✅ 已上传 ${ok}/${matched.length} 个文件`);
+      log('蓝色=已上传，请检查后提交！');
+      document.getElementById('__rf_clear_hl__').style.display = '';
+    } else if (!pending.length) {
+      log('没有可上传的文件');
+    }
+    if (!pending.length) log('黄色=未能自动匹配，请手动点击文件框选择');
+  }
+
+  document.getElementById('__rf_upload__').addEventListener('click', runMaterialUpload);
+  document.getElementById('__rf_materials__').addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'OPEN_MATERIALS' });
+  });
 
   // ===== 接收 popup 消息 =====
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
