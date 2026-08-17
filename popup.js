@@ -23,6 +23,12 @@ document.getElementById('btn-jobs').addEventListener('click', () => {
   window.close();
 });
 
+// 打开材料库管理页
+document.getElementById('btn-materials').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('materials.html') });
+  window.close();
+});
+
 // ===== 统计各板块填写率 =====
 function countFilled(obj) {
   if (!obj || typeof obj !== 'object') return { filled: 0, total: 0 };

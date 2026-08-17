@@ -6,6 +6,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return;
   }
 
+  if (msg.type === 'OPEN_MATERIALS') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('materials.html') });
+    return;
+  }
+
   if (msg.type === 'AI_FILL') {
     handleAIFill(msg).then(sendResponse).catch(err => {
       sendResponse({ error: err.message });
