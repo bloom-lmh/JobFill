@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <title>材料库管理</title>
+  <link rel="stylesheet" href="materials.css"/>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📁 材料库</h1>
+  <div class="top-actions">
+    <button id="btn-import">导入文件</button>
+    <input type="file" id="file-input" multiple hidden/>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="drop-zone" id="drop-zone">
+  <div class="drop-hint">把文件拖到这里，或点右上角「导入文件」（可一次多选/整目录）</div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th style="width:40%">文件名</th><th>分类</th><th>大小</th><th style="width:60px">默认</th><th style="width:70px">操作</th></tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="materials-core.js"></script>
+<script src="materials.js"></script>
+</body>
+</html>
