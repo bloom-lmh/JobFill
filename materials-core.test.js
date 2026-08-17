@@ -2,6 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert');
 const C = require('./materials-core.js');
 
+test('CATEGORIES 分类清单', () => {
+  assert.deepStrictEqual(C.CATEGORIES, ['简历', '成绩单', '学位证', '毕业证', '学籍报告', '身份证', '证件照', '奖学金', '奖状', '证书', '部队', '其他']);
+});
+
 test('classifyMaterialByFilename 按文件名归类', () => {
   assert.strictEqual(C.classifyMaterialByFilename('兰茂豪的简历.pdf'), '简历');
   assert.strictEqual(C.classifyMaterialByFilename('本科成绩单.jpg'), '成绩单');
@@ -10,9 +14,14 @@ test('classifyMaterialByFilename 按文件名归类', () => {
   assert.strictEqual(C.classifyMaterialByFilename('毕业证书_500K.jpg'), '毕业证');
   assert.strictEqual(C.classifyMaterialByFilename('研究生-教育部学籍在线验证报告_兰茂豪.pdf'), '学籍报告');
   assert.strictEqual(C.classifyMaterialByFilename('身份证.jpg'), '身份证');
-  assert.strictEqual(C.classifyMaterialByFilename('头像512k.jpg'), '头像');
+  assert.strictEqual(C.classifyMaterialByFilename('头像512k.jpg'), '证件照');
+  assert.strictEqual(C.classifyMaterialByFilename('学业一等奖学金.jpg'), '奖学金');
+  assert.strictEqual(C.classifyMaterialByFilename('三好学生.jpg'), '奖状');
+  assert.strictEqual(C.classifyMaterialByFilename('羽毛球院级二等奖.jpg'), '奖状');
   assert.strictEqual(C.classifyMaterialByFilename('计算机二级C语言证.png'), '证书');
-  assert.strictEqual(C.classifyMaterialByFilename('优秀义务兵.jpg'), '证书');
+  assert.strictEqual(C.classifyMaterialByFilename('CET6_202412_510790242205424_1.pdf'), '证书');
+  assert.strictEqual(C.classifyMaterialByFilename('优秀义务兵.jpg'), '部队');
+  assert.strictEqual(C.classifyMaterialByFilename('服务保障70周年纪念证书.jpg'), '部队');
   assert.strictEqual(C.classifyMaterialByFilename('unknown.xyz'), '其他');
 });
 
@@ -24,8 +33,14 @@ test('matchMaterialCategory hint→分类 有序匹配', () => {
   assert.strictEqual(C.matchMaterialCategory('本科成绩单'), '成绩单');
   assert.strictEqual(C.matchMaterialCategory('教育部学籍在线验证报告'), '学籍报告');
   assert.strictEqual(C.matchMaterialCategory('身份证'), '身份证');
-  assert.strictEqual(C.matchMaterialCategory('上传头像'), '头像');
+  assert.strictEqual(C.matchMaterialCategory('上传头像'), '证件照');
+  assert.strictEqual(C.matchMaterialCategory('一寸白底证件照'), '证件照');
+  assert.strictEqual(C.matchMaterialCategory('奖学金证明'), '奖学金');
+  assert.strictEqual(C.matchMaterialCategory('荣誉证书'), '奖状');
+  assert.strictEqual(C.matchMaterialCategory('获奖证书'), '奖状');
   assert.strictEqual(C.matchMaterialCategory('四六级证书'), '证书');
+  assert.strictEqual(C.matchMaterialCategory('技能证书'), '证书');
+  assert.strictEqual(C.matchMaterialCategory('退役证'), '部队');
   assert.strictEqual(C.matchMaterialCategory(''), null);
   assert.strictEqual(C.matchMaterialCategory('无所谓的内容'), null);
 });
@@ -58,7 +73,7 @@ test('filterByAccept 按 accept 过滤', () => {
   const list = [
     { id: 'a', name: '简历.pdf', mime: 'application/pdf', category: '简历' },
     { id: 'b', name: '简历.jpg', mime: 'image/jpeg', category: '简历' },
-    { id: 'c', name: '头像.png', mime: 'image/png', category: '头像' },
+    { id: 'c', name: '证件照.png', mime: 'image/png', category: '证件照' },
   ];
   assert.deepStrictEqual(C.filterByAccept(list, '简历', '.pdf').map(m => m.id), ['a']);
   assert.deepStrictEqual(C.filterByAccept(list, '简历', '.jpg,.png').map(m => m.id), ['b']);

@@ -2,18 +2,21 @@
 (function (root) {
   'use strict';
 
-  var CATEGORIES = ['简历', '成绩单', '学位证', '毕业证', '学籍报告', '身份证', '头像', '证书', '其他'];
+  var CATEGORIES = ['简历', '成绩单', '学位证', '毕业证', '学籍报告', '身份证', '证件照', '奖学金', '奖状', '证书', '部队', '其他'];
 
   // hint → 分类 有序匹配（先学位后毕业、先学籍后证书，避免交叉吞并）
   var DEFAULT_MATCHERS = [
     { category: '简历',   re: /简历|resume|cv|个人简历|附件简历/i },
-    { category: '成绩单', re: /成绩单|transcript|成绩/i },
+    { category: '成绩单', re: /成绩单|成绩|绩点|transcript/i },
     { category: '学位证', re: /学位|degree/i },
     { category: '毕业证', re: /毕业|diploma|graduation|学历证书/i },
     { category: '学籍报告', re: /学籍|学信网|验证报告|学历认证|教育部/i },
-    { category: '身份证', re: /身份证|id.?card|证件|身份/i },
-    { category: '头像',   re: /头像|照片|证件照|avatar|photo|一寸|二寸|近照/i },
-    { category: '证书',   re: /证书|奖|荣誉|certificate|技能|等级|考试|英语|四级|六级|奖状/i },
+    { category: '身份证', re: /身份证|id.?card|身份/i },
+    { category: '证件照', re: /证件照|头像|照片|一寸|二寸|近照|avatar|photo|白底|蓝底|红底/i },
+    { category: '奖学金', re: /奖学金|学业奖|硕士奖/i },
+    { category: '部队',   re: /服役|退役|退伍|义务兵|教官|纪念|部队|军人|军旅/i },
+    { category: '奖状',   re: /获奖|荣誉|奖状|三好|竞赛|优秀|称号/i },
+    { category: '证书',   re: /技能|资格|等级|英语|四级|六级|cet|计算机|数据库|普通话|证书/i },
   ];
 
   var MIME_MAP = {
@@ -50,8 +53,12 @@
     if (/毕业证|毕业证书|diploma|graduation/i.test(n)) return '毕业证';
     if (/学籍|验证报告|学信/i.test(n)) return '学籍报告';
     if (/身份证|id.?card/i.test(n)) return '身份证';
-    if (/头像|证件照|照片|avatar|photo|一寸|二寸|近照/i.test(n)) return '头像';
-    if (/证书|四级|六级|四六级|计算机|数据库|奖学金|奖状|荣誉|英语|cet|证明|义务兵|教官|纪念|军训|部队|党员/i.test(n)) return '证书';
+    if (/头像|证件照|照片|一寸|二寸|近照|avatar|photo|白底|蓝底|红底/i.test(n)) return '证件照';
+    if (/奖学金|学业奖|硕士奖/i.test(n)) return '奖学金';
+    if (/义务兵|教官|纪念|部队|服役|退役|退伍/i.test(n)) return '部队';
+    if (/三好|竞赛|奖状|荣誉|优秀|志愿者|自愿者|班委|委员|党员|发展对象|实训|获奖|奖/i.test(n)) return '奖状';
+    if (/四级|六级|四六级|计算机|数据库|英语|cet|等级|工程师/i.test(n)) return '证书';
+    if (/证明|证书/i.test(n)) return '证书';
     return '其他';
   }
 
