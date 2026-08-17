@@ -1,0 +1,22 @@
+{
+  "days_back": 7,
+  "max_results": 50,
+  "sources": [
+    {
+      "name": "四川省人社厅·公示公告",
+      "base": "http://rst.sc.gov.cn",
+      "list_url": "http://rst.sc.gov.cn/rst/gsgg/zfxxgkpage.shtml",
+      "list_type": "rst-dated-links",
+      "category_hint": "公务员",
+      "enabled": true
+    },
+    {
+      "name": "四川省人社厅·市县动态",
+      "base": "http://rst.sc.gov.cn",
+      "list_url": "http://rst.sc.gov.cn/rst/sndt/zwdtlist.shtml",
+      "list_type": "rst-dated-links",
+      "category_hint": "事业编",
+      "enabled": true
+    }
+  ]
+}

@@ -41,5 +41,11 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; white-space: nowrap;
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .modal-actions button { padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; }
 #m-save { background: #2563eb; color: #fff; border-color: #2563eb; }
+.check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 3px; }
+.check-group label { display: inline-flex; align-items: center; gap: 5px; margin: 0; font-size: 13px; color: #374151; cursor: pointer; }
+.check-group input { width: auto; margin: 0; }
+.pull-hint { margin-top: 10px; padding: 10px; background: #f9fafb; border-radius: 6px; font-size: 12px; color: #6b7280; line-height: 1.7; }
+.pull-hint code { background: #eef2ff; color: #4338ca; padding: 1px 5px; border-radius: 4px; }
+#pc-save { background: #2563eb; color: #fff; border-color: #2563eb; }
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 8px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; font-size: 13px; }
 .toast.show { opacity: 1; }

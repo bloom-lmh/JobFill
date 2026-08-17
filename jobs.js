@@ -6,6 +6,20 @@
 
   var REGION_BASE = ['成都', '成都周边', '绵阳', '德阳', '眉山', '宜宾', '南充', '乐山', '泸州', '达州', '广元', '内江', '自贡', '遂宁', '巴中', '广安', '雅安', '资阳', '攀枝花', '凉山', '甘孜', '阿坝', '四川', '北京', '重庆', '上海', '广州', '深圳'];
 
+  var PULL_SOURCES = [
+    { key: 'boss', name: 'BOSS直聘', url: function (kw) { return 'https://www.zhipin.com/web/geek/job?query=' + encodeURIComponent(kw); } },
+    { key: 'zhilian', name: '智联招聘', url: function (kw) { return 'https://sou.zhaopin.com/?kw=' + encodeURIComponent(kw); } },
+    { key: 'job51', name: '前程无忧', url: function (kw) { return 'https://we.51job.com/pc/search?keyword=' + encodeURIComponent(kw) + '&searchType=2&sortType=0'; } },
+    { key: 'gongkao', name: '考公雷达', url: function () { return 'https://www.gongkaoleida.com/'; } }
+  ];
+
+  var DEFAULT_PULL_CONFIG = {
+    keywords: ['软件测试工程师', '测试开发工程师'],
+    region: '成都',
+    sources: ['boss', 'zhilian', 'job51'],
+    pullCount: 50
+  };
+
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
   function load() { return new Promise(function (res) { chrome.storage.local.get('jobList', function (d) { res(Array.isArray(d.jobList) ? d.jobList : []); }); }); }
@@ -133,12 +147,78 @@
     save(state.list).then(function () { render(); toast('已删除 ' + expired.length + ' 条过期岗位'); });
   }
 
+  // ===== 拉取设置 + 批量打开 =====
+  function loadConfig() {
+    return new Promise(function (res) {
+      chrome.storage.local.get('jobPullConfig', function (d) {
+        var cfg = Object.assign({}, DEFAULT_PULL_CONFIG, d.jobPullConfig || {});
+        res(cfg);
+      });
+    });
+  }
+  function saveConfig(cfg) { return new Promise(function (res) { chrome.storage.local.set({ jobPullConfig: cfg }, res); }); }
+
+  function openBatch() {
+    loadConfig().then(function (cfg) {
+      var region = (cfg.region || '').trim();
+      var urls = [];
+      PULL_SOURCES.forEach(function (s) {
+        if (cfg.sources.indexOf(s.key) === -1) return;
+        if (s.key === 'gongkao') { urls.push(s.url()); return; }
+        (cfg.keywords || []).forEach(function (kw) {
+          if (!kw || !kw.trim()) return;
+          var q = kw.trim() + (region ? ' ' + region : '');
+          urls.push(s.url(q));
+        });
+      });
+      if (urls.length === 0) { toast('没有可打开的链接，请先在「拉取设置」里配置关键词和来源'); return; }
+      if (!confirm('将打开 ' + urls.length + ' 个招聘网站标签页，确定？')) return;
+      urls.forEach(function (u, i) {
+        // 错开打开，避免浏览器拦截批量弹窗
+        setTimeout(function () { chrome.tabs.create({ url: u }); }, i * 350);
+      });
+      toast('已打开 ' + urls.length + ' 个标签页');
+    });
+  }
+
+  function renderSourceChecks(checkedKeys) {
+    $('pc-sources').innerHTML = PULL_SOURCES.map(function (s) {
+      return '<label><input type="checkbox" value="' + esc(s.key) + '"' + (checkedKeys.indexOf(s.key) !== -1 ? ' checked' : '') + '>' + esc(s.name) + '</label>';
+    }).join('');
+  }
+
+  function openPullModal() {
+    loadConfig().then(function (cfg) {
+      $('pc-keywords').value = (cfg.keywords || []).join('\n');
+      $('pc-region').value = cfg.region || '';
+      $('pc-count').value = cfg.pullCount || 50;
+      renderSourceChecks(cfg.sources || []);
+      $('pull-modal').hidden = false;
+    });
+  }
+
+  function savePullModal() {
+    var keywords = $('pc-keywords').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var sources = Array.prototype.map.call($('pc-sources').querySelectorAll('input:checked'), function (c) { return c.value; });
+    var cfg = {
+      keywords: keywords,
+      region: $('pc-region').value.trim(),
+      sources: sources,
+      pullCount: parseInt($('pc-count').value, 10) || 50
+    };
+    saveConfig(cfg).then(function () { $('pull-modal').hidden = true; toast('拉取设置已保存'); });
+  }
+
   function bind() {
     $('btn-import').addEventListener('click', function () { $('file-input').click(); });
     $('file-input').addEventListener('change', function (e) { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; });
     $('btn-export').addEventListener('click', exportJson);
     $('btn-add').addEventListener('click', function () { openModal(null); });
     $('btn-del-expired').addEventListener('click', delExpired);
+    $('btn-batch-open').addEventListener('click', openBatch);
+    $('btn-pull-config').addEventListener('click', openPullModal);
+    $('pc-save').addEventListener('click', savePullModal);
+    $('pc-cancel').addEventListener('click', function () { $('pull-modal').hidden = true; });
     $('m-save').addEventListener('click', saveModal);
     $('m-cancel').addEventListener('click', closeModal);
 

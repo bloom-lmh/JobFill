@@ -11,7 +11,18 @@ Thumbs.db
 
 # 岗位清单数据（含真实求职信息，不上传）
 岗位清单.json
+岗位清单*.json
 
 # 转换工具依赖
 tools/node_modules/
 tools/package-lock.json
+
+# 爬虫 AI 配置（含 API key，不上传）
+crawler/config.json
+
+# 爬虫产物（含真实岗位数据，不上传）
+crawler/output/
+
+# Python 缓存
+__pycache__/
+*.pyc

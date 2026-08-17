@@ -10,6 +10,8 @@
   <header class="topbar">
     <h1>岗位清单</h1>
     <div class="top-actions">
+      <button id="btn-batch-open">🔗 批量打开招聘站</button>
+      <button id="btn-pull-config">⚙ 拉取设置</button>
       <button id="btn-import">导入 JSON</button>
       <button id="btn-export">导出 JSON</button>
       <button id="btn-add">+ 新增岗位</button>
@@ -62,6 +64,26 @@
       <div class="modal-actions">
         <button id="m-cancel">取消</button>
         <button id="m-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pull-modal" class="modal" hidden>
+    <div class="modal-box">
+      <h2>⚙ 拉取设置</h2>
+      <label>搜索关键词（一行一个，批量打开用）<textarea id="pc-keywords" rows="5" placeholder="软件测试工程师&#10;测试开发工程师"></textarea></label>
+      <label>地区（附加到关键词后）<input id="pc-region" placeholder="成都"></label>
+      <label>批量打开来源（可多选）</label>
+      <div class="check-group" id="pc-sources"></div>
+      <label>官网拉取数量（爬虫每次最多抓取）<input id="pc-count" type="number" min="1" max="500" placeholder="50"></label>
+      <div class="pull-hint">
+        官网公告岗位（公务员/事业编/教师/银行/国企/央企/军队文职）由本地爬虫抓取：
+        运行 <code>python crawler/crawl.py</code> 生成
+        <code>crawler/output/jobs.json</code>，再用「导入 JSON」导入。
+      </div>
+      <div class="modal-actions">
+        <button id="pc-cancel">取消</button>
+        <button id="pc-save">保存</button>
       </div>
     </div>
   </div>
