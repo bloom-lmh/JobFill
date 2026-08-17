@@ -4,6 +4,8 @@
 
   var state = { list: [], category: '全部', status: '全部', region: '', keyword: '', sort: 'deadline', page: 1, pageSize: 50, editingId: null };
 
+  var REGION_BASE = ['成都', '成都周边', '绵阳', '德阳', '眉山', '宜宾', '南充', '乐山', '泸州', '达州', '广元', '内江', '自贡', '遂宁', '巴中', '广安', '雅安', '资阳', '攀枝花', '凉山', '甘孜', '阿坝', '四川', '北京', '重庆', '上海', '广州', '深圳'];
+
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
   function load() { return new Promise(function (res) { chrome.storage.local.get('jobList', function (d) { res(Array.isArray(d.jobList) ? d.jobList : []); }); }); }
@@ -114,11 +116,29 @@
     toast('已导出');
   }
 
+  function initRegionDatalist() {
+    var set = {};
+    REGION_BASE.forEach(function (r) { set[r] = 1; });
+    state.list.forEach(function (j) { if (j.region) set[j.region] = 1; });
+    var opts = Object.keys(set).map(function (r) { return '<option value="' + esc(r) + '">'; }).join('');
+    $('region-list').innerHTML = opts;
+  }
+
+  function delExpired() {
+    var today = C.todayStr();
+    var expired = state.list.filter(function (j) { return C.isExpired(j, today); });
+    if (expired.length === 0) { toast('没有过期岗位'); return; }
+    if (!confirm('将删除 ' + expired.length + ' 条截止日期已过的岗位，确定？')) return;
+    state.list = C.removeExpired(state.list, today);
+    save(state.list).then(function () { render(); toast('已删除 ' + expired.length + ' 条过期岗位'); });
+  }
+
   function bind() {
     $('btn-import').addEventListener('click', function () { $('file-input').click(); });
     $('file-input').addEventListener('change', function (e) { if (e.target.files[0]) importJson(e.target.files[0]); e.target.value = ''; });
     $('btn-export').addEventListener('click', exportJson);
     $('btn-add').addEventListener('click', function () { openModal(null); });
+    $('btn-del-expired').addEventListener('click', delExpired);
     $('m-save').addEventListener('click', saveModal);
     $('m-cancel').addEventListener('click', closeModal);
 
@@ -154,6 +174,6 @@
     C.CATEGORIES.forEach(function (c) { var o = document.createElement('option'); o.textContent = c; $('m-category').appendChild(o); });
   }
 
-  async function init() { initFilters(); bind(); state.list = await load(); render(); }
+  async function init() { initFilters(); bind(); state.list = await load(); initRegionDatalist(); render(); }
   init();
 })();
