@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; color: #1f2937; background: #f5f7fa; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; }
+.topbar h1 { font-size: 18px; margin: 0; }
+.top-actions button, .pager button { padding: 6px 12px; border: 1px solid #d1d5db; background: #fff; border-radius: 6px; cursor: pointer; }
+#btn-add { background: #2563eb; color: #fff; border-color: #2563eb; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 20px; }
+.chip { background: #eef2ff; color: #4338ca; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+.chip-warn { background: #fef3c7; color: #92400e; }
+.filters { display: flex; gap: 8px; padding: 0 20px 12px; }
+.filters select, .filters input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; }
+.table-wrap { background: #fff; border: 1px solid #e5e7eb; margin: 0 20px; border-radius: 8px; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+th { background: #f9fafb; color: #6b7280; font-weight: 600; white-space: nowrap; }
+.cell-pos { max-width: 260px; }
+.tag { padding: 1px 8px; border-radius: 4px; font-size: 12px; }
+.tag-私企 { background: #dbeafe; color: #1d4ed8; }
+.tag-编制 { background: #dcfce7; color: #15803d; }
+.tag-考编 { background: #fef9c3; color: #a16207; }
+.tag-考公 { background: #fee2e2; color: #b91c1c; }
+.status-select { border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 4px; }
+.deadline.soon { color: #dc2626; font-weight: 700; }
+.btn-act { border: none; background: #eff6ff; color: #2563eb; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 4px; }
+.btn-act-danger { background: #fef2f2; color: #dc2626; }
+.btn-act-muted { background: #f3f4f6; color: #6b7280; }
+.pager { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 14px; }
+.empty { text-align: center; color: #9ca3af; padding: 30px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; }
+.modal[hidden] { display: none; }
+.modal-box { background: #fff; border-radius: 10px; padding: 20px; width: 440px; max-height: 90vh; overflow: auto; }
+.modal-box h2 { margin: 0 0 12px; font-size: 16px; }
+.modal-box label { display: block; margin-bottom: 8px; font-size: 13px; color: #374151; }
+.modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 3px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.modal-actions button { padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; }
+#m-save { background: #2563eb; color: #fff; border-color: #2563eb; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 8px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; font-size: 13px; }
+.toast.show { opacity: 1; }
