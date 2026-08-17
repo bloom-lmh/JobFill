@@ -11,6 +11,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return;
   }
 
+  if (msg.type === 'OPEN_JOBS') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('jobs.html') });
+    return;
+  }
+
   if (msg.type === 'AI_FILL') {
     handleAIFill(msg).then(sendResponse).catch(err => {
       sendResponse({ error: err.message });

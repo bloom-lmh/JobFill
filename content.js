@@ -23,6 +23,7 @@
       <button id="__rf_clear_hl__" style="display:none">🧹 清除高亮</button>
       <button id="__rf_upload__">📁 上传材料</button>
       <button id="__rf_materials__">📁 材料库</button>
+      <button id="__rf_jobs__">📋 岗位清单</button>
       <button id="__rf_manage__">⚙ 管理简历</button>
     </div>
     <div id="__rf_log__"></div>
@@ -143,6 +144,7 @@
     #__rf_jd_extract__.jd-saved { background: #276749; }
     #__rf_upload__    { background: #d97706; color: #fff; }
     #__rf_materials__ { background: #4a5568; color: #fff; font-size: 12px; }
+    #__rf_jobs__      { background: #2b6cb0; color: #fff; font-size: 12px; }
     #__rf_manage__    { background: #6b46c1; color: #e9d8fd; font-size: 12px; }
     #__rf_clear_hl__  { background: #718096; color: #fff; font-size: 12px; }
     #__rf_file_picker__ { padding: 6px 12px 10px; }
@@ -2094,6 +2096,9 @@
   document.getElementById('__rf_upload__').addEventListener('click', runMaterialUpload);
   document.getElementById('__rf_materials__').addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'OPEN_MATERIALS' });
+  });
+  document.getElementById('__rf_jobs__').addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'OPEN_JOBS' });
   });
 
   // ===== 接收 popup 消息 =====
