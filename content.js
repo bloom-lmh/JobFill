@@ -2081,15 +2081,14 @@
       renderManualPicker(pending, materials);
     }
 
-    clearLog();
     if (ok) {
       log(`✅ 已上传 ${ok}/${matched.length} 个文件`);
       log('蓝色=已上传，请检查后提交！');
       document.getElementById('__rf_clear_hl__').style.display = '';
-    } else if (!pending.length) {
-      log('没有可上传的文件');
+    } else if (matched.length === 0) {
+      log('没有可自动匹配的文件');
     }
-    if (!pending.length) log('黄色=未能自动匹配，请手动点击文件框选择');
+    if (pending.length) log('黄色=待手动分配，请在下方下拉选择');
   }
 
   document.getElementById('__rf_upload__').addEventListener('click', runMaterialUpload);
