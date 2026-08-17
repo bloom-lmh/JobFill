@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   var STATUSES = ['待投递', '已投递', '已笔试', '已面试', '已offer', '已拒'];
-  var CATEGORIES = ['私企', '编制', '考编', '考公'];
+  var CATEGORIES = ['公务员', '事业编', '教师', '银行', '国企', '央企', '军队文职', '其它', '私企'];
 
   function isValidStatus(s) { return STATUSES.indexOf(s) !== -1; }
   function isValidCategory(c) { return CATEGORIES.indexOf(c) !== -1; }
@@ -31,9 +31,10 @@
   function normalizeJob(raw, category) {
     raw = raw || {};
     var dl = String(raw.deadline == null ? '' : raw.deadline);
+    var pd = String(raw.publishedAt == null ? '' : raw.publishedAt);
     return {
       id: typeof raw.id === 'string' && raw.id ? raw.id : genId(),
-      category: isValidCategory(raw.category) ? raw.category : (category || ''),
+      category: isValidCategory(raw.category) ? raw.category : (isValidCategory(category) ? category : '其它'),
       region: String(raw.region || ''),
       position: String(raw.position || ''),
       company: String(raw.company || ''),
@@ -44,6 +45,8 @@
       link: String(raw.link || ''),
       status: isValidStatus(raw.status) ? raw.status : '待投递',
       deadline: /^\d{4}-\d{2}-\d{2}$/.test(dl) ? dl : '',
+      publishedAt: /^\d{4}-\d{2}-\d{2}$/.test(pd) ? pd : '',
+      fetchedAt: String(raw.fetchedAt || ''),
       appliedAt: String(raw.appliedAt || ''),
       note: String(raw.note || '')
     };
@@ -96,7 +99,17 @@
     return next;
   }
 
-  var api = { STATUSES: STATUSES, CATEGORIES: CATEGORIES, genId: genId, todayStr: todayStr, validateJob: validateJob, validateJobList: validateJobList, normalizeJob: normalizeJob, filterJobs: filterJobs, sortJobs: sortJobs, isDeadlineSoon: isDeadlineSoon, applyStatus: applyStatus };
+  function isExpired(j, today) {
+    if (!j || !j.deadline) return false;
+    return j.deadline < (today || todayStr());
+  }
+
+  function removeExpired(list, today) {
+    var t = today || todayStr();
+    return (list || []).filter(function (j) { return !isExpired(j, t); });
+  }
+
+  var api = { STATUSES: STATUSES, CATEGORIES: CATEGORIES, genId: genId, todayStr: todayStr, validateJob: validateJob, validateJobList: validateJobList, normalizeJob: normalizeJob, filterJobs: filterJobs, sortJobs: sortJobs, isDeadlineSoon: isDeadlineSoon, applyStatus: applyStatus, isExpired: isExpired, removeExpired: removeExpired };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.JobCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

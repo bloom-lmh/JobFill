@@ -30,7 +30,7 @@ test('validateJobList 检出非法数据', () => {
 test('filterJobs 按分类+状态+关键词过滤', () => {
   const list = [
     C.normalizeJob({ position: '前端工程师', company: 'A', category: '私企', status: '待投递' }),
-    C.normalizeJob({ position: '运维', company: 'B', category: '编制', status: '已投递' }),
+    C.normalizeJob({ position: '运维', company: 'B', category: '事业编', status: '已投递' }),
   ];
   assert.strictEqual(C.filterJobs(list, { category: '私企', keyword: '前端' }).length, 1);
   assert.strictEqual(C.filterJobs(list, { status: '已投递' })[0].position, '运维');
@@ -69,4 +69,39 @@ test('sortJobs 按 region 排序，空值安全不抛错', () => {
 
 test('isDeadlineSoon 空对象不抛错', () => {
   assert.strictEqual(C.isDeadlineSoon(null, '2026-08-16', 3), false);
+});
+
+test('CATEGORIES 9 类清单', () => {
+  assert.deepStrictEqual(C.CATEGORIES, ['公务员', '事业编', '教师', '银行', '国企', '央企', '军队文职', '其它', '私企']);
+});
+
+test('normalizeJob 旧分类回退其它', () => {
+  assert.strictEqual(C.normalizeJob({ position: 'x', category: '考公' }).category, '其它');
+  assert.strictEqual(C.normalizeJob({ position: 'x', category: '编制' }).category, '其它');
+  assert.strictEqual(C.normalizeJob({ position: 'x', category: '私企' }).category, '私企');
+  assert.strictEqual(C.normalizeJob({ position: 'x' }).category, '其它');
+});
+
+test('normalizeJob 补全 publishedAt / fetchedAt', () => {
+  const j = C.normalizeJob({ position: 'x', publishedAt: '2026-08-10', fetchedAt: '2026-08-17' });
+  assert.strictEqual(j.publishedAt, '2026-08-10');
+  assert.strictEqual(j.fetchedAt, '2026-08-17');
+  assert.strictEqual(C.normalizeJob({ position: 'x', publishedAt: '8月10日' }).publishedAt, '');
+});
+
+test('isExpired 截止日期早于今天为真', () => {
+  assert.strictEqual(C.isExpired({ deadline: '2026-08-10' }, '2026-08-17'), true);
+  assert.strictEqual(C.isExpired({ deadline: '2026-08-17' }, '2026-08-17'), false);
+  assert.strictEqual(C.isExpired({ deadline: '2026-08-20' }, '2026-08-17'), false);
+  assert.strictEqual(C.isExpired({ deadline: '' }, '2026-08-17'), false);
+  assert.strictEqual(C.isExpired(null, '2026-08-17'), false);
+});
+
+test('removeExpired 删除过期岗位', () => {
+  const list = [
+    { id: '1', deadline: '2026-08-10' },
+    { id: '2', deadline: '2026-08-20' },
+    { id: '3', deadline: '' },
+  ];
+  assert.deepStrictEqual(C.removeExpired(list, '2026-08-17').map((x) => x.id), ['2', '3']);
 });
