@@ -17,6 +17,12 @@ document.getElementById('btn-options').addEventListener('click', () => {
   window.close();
 });
 
+// 打开岗位清单页
+document.getElementById('btn-jobs').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('jobs.html') });
+  window.close();
+});
+
 // ===== 统计各板块填写率 =====
 function countFilled(obj) {
   if (!obj || typeof obj !== 'object') return { filled: 0, total: 0 };
