@@ -17,6 +17,68 @@
       "list_type": "rst-dated-links",
       "category_hint": "事业编",
       "enabled": true
+    },
+    {
+      "name": "四川省人社厅·招考录用",
+      "base": "http://rst.sc.gov.cn",
+      "list_url": "http://rst.sc.gov.cn/rst/zkly/zfxxgkpage.shtml",
+      "list_type": "rst-dated-links",
+      "category_hint": "事业编",
+      "enabled": true
+    },
+    {
+      "name": "四川人事考试网·公务员",
+      "base": "https://www.scpta.com.cn",
+      "list_url": "https://www.scpta.com.cn/front/News/List/56",
+      "list_type": "span-date",
+      "item_selector": "li",
+      "link_contains": "News/info",
+      "category_hint": "公务员",
+      "enabled": true
+    },
+    {
+      "name": "四川人事考试网·事业单位",
+      "base": "https://www.scpta.com.cn",
+      "list_url": "https://www.scpta.com.cn/front/News/List/67",
+      "list_type": "span-date",
+      "item_selector": "li",
+      "link_contains": "News/info",
+      "category_hint": "事业编",
+      "enabled": true
+    },
+    {
+      "name": "四川省教育厅·高校招聘",
+      "base": "http://edu.sc.gov.cn",
+      "list_url": "http://edu.sc.gov.cn/scedu/c100505/xwzx_list.shtml",
+      "list_type": "span-date",
+      "item_selector": "ul.xwzxList li",
+      "category_hint": "教师",
+      "enabled": true
+    },
+    {
+      "name": "国家公务员局·招考公告",
+      "base": "http://dl.scs.gov.cn",
+      "list_url": "http://dl.scs.gov.cn/api/article/articlelist/all/8a81f6d9980207bb0198ab5683670008/0000000062b7b2b60162bccdd5860007/{page}",
+      "list_type": "json-scs",
+      "category_hint": "公务员",
+      "enabled": true
+    },
+    {
+      "name": "建设银行·社会招聘",
+      "base": "https://job.ccb.com",
+      "list_url": "https://job.ccb.com/tran/WCCMainPlatV5?CCB_IBSVersion=V5&isAjaxRequest=true&SERVLET_NAME=WCCMainPlatV5&TXCODE=NHR105&planType=SH&PAGE_JUMP=1&REC_IN_PAGE=50",
+      "list_type": "json-ccb",
+      "category_hint": "银行",
+      "enabled": true
+    },
+    {
+      "name": "军队人才网·文职公告",
+      "base": "http://81rc.81.cn",
+      "list_url": "http://81rc.81.cn/sy/gzdt_210283/index.html",
+      "list_type": "span-date",
+      "item_selector": "ul li",
+      "category_hint": "军队文职",
+      "enabled": true
     }
   ]
 }

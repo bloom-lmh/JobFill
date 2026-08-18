@@ -7,8 +7,8 @@ import requests
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
 
 
-def get(url, timeout=30, max_retries=4):
-    """GET 一个 URL，返回 requests.Response。403/429/超时按指数退避重试。"""
+def get(url, timeout=30, max_retries=5):
+    """GET 一个 URL，返回 requests.Response。403/429/502/超时按指数退避重试。"""
     headers = {'User-Agent': UA, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'}
     last_err = None
     for attempt in range(max_retries):

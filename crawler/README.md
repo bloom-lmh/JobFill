@@ -41,27 +41,61 @@ python crawler/crawl.py --days 14 --limit 100
 - 每天只跑一次，只抓列表页第一屏的最新公告
 - 只抓公开的官方公告页，不做高频全量爬取
 
-## 添加新源（Task #6 铺满全部源）
+## 已接入源（9 个，覆盖 6 类）
 
-在 `sources.json` 的 `sources` 数组里加一条即可，例如：
+| 源 | 分类 | 范围 | list_type |
+|----|------|------|-----------|
+| 四川省人社厅·公示公告 | 公务员 | 四川 | `rst-dated-links` |
+| 四川省人社厅·市县动态 | 事业编 | 四川 | `rst-dated-links` |
+| 四川省人社厅·招考录用 | 事业编 | 四川 | `rst-dated-links` |
+| 四川人事考试网·公务员 | 公务员 | 四川 | `span-date` |
+| 四川人事考试网·事业单位 | 事业编 | 四川 | `span-date` |
+| 四川省教育厅·高校招聘 | 教师 | 四川 | `span-date` |
+| 国家公务员局·招考公告 | 公务员 | 全国 | `json-scs` |
+| 建设银行·社会招聘 | 银行 | 全国 | `json-ccb` |
+| 军队人才网·文职公告 | 军队文职 | 全国 | `span-date` |
+
+> 说明：
+> - 公务员/事业编/教师为季节性招聘，7 天窗口内可能只有 0~3 条属正常，可用 `--days 30` 拉更长区间。
+> - **军队人才网（81rc.81.cn）偶发 502**，已加重试（5 次指数退避）；失败时该源自动跳过，不影响其它源。
+> - **四川省国资委**未接入：其「招考录用」栏目最新一条停在 2022 年，国企招聘多发布在微信公众号（mp.weixin.qq.com），官网无可抓栏目，建议手动。
+> - **银行/央企/私企/其它** 大多无官网公告源，靠「岗位清单」里的「一键批量打开」招聘站 + 手动导入。
+
+## 添加新源
+
+在 `sources.json` 的 `sources` 数组里加一条即可，`list_type` 三选一：
+
+**1. `rst-dated-links`** —— 日期在 URL 路径 `/YYYY/M/D/xxx.shtml` 里，标题取链接文字。
 
 ```json
 {
-  "name": "四川省教育厅",
-  "base": "http://edu.sc.gov.cn",
-  "list_url": "http://edu.sc.gov.cn/xxx/list.shtml",
+  "name": "某单位·栏目",
+  "base": "http://xxx.gov.cn",
+  "list_url": "http://xxx.gov.cn/col/xxx.shtml",
   "list_type": "rst-dated-links",
-  "category_hint": "教师",
+  "category_hint": "事业编",
   "enabled": true
 }
 ```
 
-`list_type: "rst-dated-links"` 是通用解析器：抓列表页里所有形如
-`/YYYY/M/D/xxx.shtml` 的链接，日期从 URL 解析，标题取链接文字。
-只要目标网站列表页是服务端渲染、且日期在链接路径里，就能直接复用。
+**2. `span-date`** —— 日期在 `<span>` 里（列表条目 = 一个 `<a>` + 一个含日期的 `<span>`）。需指定 `item_selector`（条目 CSS 选择器），必要时加 `link_contains` 过滤链接。
 
-> 注意：四川人事考试网（scpta.com.cn）是 SPA 单页应用，列表靠 JS 加载，
-> 无法用 `rst-dated-links` 直接抓，需要单独解析其 JSON 接口（后续源接入时处理）。
+```json
+{
+  "name": "某单位·栏目",
+  "base": "https://xxx.cn",
+  "list_url": "https://xxx.cn/News/List/56",
+  "list_type": "span-date",
+  "item_selector": "li",
+  "link_contains": "News/info",
+  "category_hint": "公务员",
+  "enabled": true
+}
+```
+
+**3. JSON 接口** —— `json-scs`（国家公务员局，`list_url` 含 `{page}` 占位符）与 `json-ccb`（建设银行，`TXCODE=NHR105` 列表 + `NHR106` 详情）已写死解析逻辑，接入同类需改 `crawl.py`。
+
+只要目标网站列表页是服务端渲染，就能复用以上解析器。SPA 纯前端渲染（列表靠 JS 加载且无 JSON 接口）的站无法直接抓。
 
 ## Windows 任务计划（每天自动拉取）
 
