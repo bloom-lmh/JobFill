@@ -158,6 +158,52 @@
   }
   function saveConfig(cfg) { return new Promise(function (res) { chrome.storage.local.set({ jobPullConfig: cfg }, res); }); }
 
+  async function pullJobs() {
+    var btn = $('btn-pull');
+    if (btn.disabled) return;
+    var stored = await new Promise(function (res) { chrome.storage.local.get('aiConfig', res); });
+    var aiConfig = stored.aiConfig;
+    if (!aiConfig || !aiConfig.apiKey) {
+      toast('请先在「设置」页配置 AI（API Key / 模型 / 接口地址）');
+      chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' });
+      return;
+    }
+    if (aiConfig.provider === 'claude') {
+      toast('拉取岗位目前仅支持 OpenAI 兼容接口（opencode / DeepSeek 等）');
+      return;
+    }
+    var cfg = await loadConfig();
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ 拉取中…';
+    try {
+      var jobs = await JobPuller.pull(aiConfig, {
+        days: 7,
+        limit: cfg.pullCount || 50,
+        onProgress: function (m) { toast(m); }
+      });
+      if (!jobs.length) { toast('拉取完成：最近 7 天无新岗位'); return; }
+      var list = jobs.map(function (j) { return C.normalizeJob(j); });
+      var v = C.validateJobList(list);
+      if (!v.ok) { toast('拉取结果异常：' + v.errors[0]); return; }
+      var existing = await load();
+      var seen = {};
+      existing.forEach(function (j) { if (j.link) seen[j.link] = 1; });
+      var fresh = list.filter(function (j) { return !j.link || !seen[j.link]; });
+      var merged = existing.concat(fresh);
+      await save(merged);
+      state.list = merged;
+      initRegionDatalist();
+      render();
+      toast('✅ 拉取完成：新增 ' + fresh.length + ' 条，共 ' + merged.length + ' 条');
+    } catch (e) {
+      toast('❌ 拉取失败：' + (e && e.message ? e.message : e));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
   function openBatch() {
     loadConfig().then(function (cfg) {
       var region = (cfg.region || '').trim();
@@ -215,6 +261,7 @@
     $('btn-export').addEventListener('click', exportJson);
     $('btn-add').addEventListener('click', function () { openModal(null); });
     $('btn-del-expired').addEventListener('click', delExpired);
+    $('btn-pull').addEventListener('click', pullJobs);
     $('btn-batch-open').addEventListener('click', openBatch);
     $('btn-pull-config').addEventListener('click', openPullModal);
     $('pc-save').addEventListener('click', savePullModal);
